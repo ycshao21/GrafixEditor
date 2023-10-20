@@ -65,6 +65,8 @@ namespace Grafix
             SetPixel(centerX + x, centerY - y, colorValue);
         if (IsInRange(y, -x, beginAngle, endAngle))
             SetPixel(centerX + y, centerY - x, colorValue);
+
+        UpdateLinePatternIndex();
     }
 
     bool ArcAlgorithm::IsInRange(int x, int y, float beginAngle, float endAngle)

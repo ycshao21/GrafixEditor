@@ -58,9 +58,9 @@ namespace Grafix
                 SetSinglePixel(j, i, RGBToUint32(color));
     }
 
-    void GraphicsAlgorithm::UpdateIndexInPattern()
+    void GraphicsAlgorithm::UpdateLinePatternIndex()
     {
-        s_Index++;
+        ++s_Index;
     }
 
     uint32_t GraphicsAlgorithm::GetWidth()

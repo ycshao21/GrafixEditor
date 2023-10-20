@@ -15,6 +15,7 @@ namespace Grafix
             glm::vec2 point{ 0.0f, 0.0f };
             point = GetBezierPoint(controlPoints, u);
             SetPixel((int)point.x, (int)point.y, colorValue);
+            UpdateLinePatternIndex();
         }
     }
 
@@ -36,20 +37,21 @@ namespace Grafix
                 float factor = BaseFunction(i, order, u, knots);
                 point += controlPoints[i] * factor;
             }
-            
+
             SetPixel((int)point.x, (int)point.y, colorValue);
+            UpdateLinePatternIndex();
         }
     }
 
     glm::vec2 CurveAlgorithm::GetBezierPoint(const std::vector<glm::vec2>& points, float u)
     {
         int n = points.size();
-        std::vector<glm::vec2> bezierPoint(n-1);
-        for(int i=0;i<n-1;i++)
+        std::vector<glm::vec2> bezierPoint(n - 1);
+        for (int i = 0; i < n - 1; i++)
             bezierPoint[i] = (1 - u) * points[i] + u * points[i + 1];
         if (n == 2)
             return bezierPoint[0];
-        else 
+        else
             return GetBezierPoint(bezierPoint, u);
     }
 

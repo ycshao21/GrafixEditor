@@ -43,7 +43,7 @@ namespace Grafix
             else
                 SetPixel(x, y, colorValue);
 
-            UpdateIndexInPattern();
+            UpdateLinePatternIndex();
 
             if (d < 0)
                 y += sy, d += d2;
@@ -91,7 +91,7 @@ namespace Grafix
             else
                 SetPixel(x, y, colorValue);
 
-            UpdateIndexInPattern();
+            UpdateLinePatternIndex();
 
             ++x;
             e += dy << 1;
