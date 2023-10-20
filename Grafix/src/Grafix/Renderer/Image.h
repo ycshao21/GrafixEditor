@@ -16,7 +16,7 @@ namespace Grafix
         Image(uint32_t width, uint32_t height, ImageFormat format, const void* data = nullptr);
         ~Image();
 
-        void SetPiexels(const void* pixels);
+        void SetPixels(const void* pixels);
         void Resize(uint32_t width, uint32_t height);
 
         uint32_t GetWidth() const { return m_Width; }

@@ -47,7 +47,7 @@ namespace Grafix
 
     void Renderer::EndScene()
     {
-        m_Image->SetPiexels(m_Pixels);
+        m_Image->SetPixels(m_Pixels);
     }
 
     void Renderer::DrawLine(const glm::vec2& p0, const glm::vec2& p1, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, LineAlgorithmType algorithm)
