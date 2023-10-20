@@ -6,17 +6,20 @@
 namespace Grafix
 {
     static uint32_t* s_PixelData = nullptr;
+    static int* s_IdMap = nullptr;
     static uint32_t s_CanvasWidth = 0, s_CanvasHeight = 0;
 
+    static int s_ID = -1;
     static uint32_t s_LineWidth = 1;
     static LineStyleType s_LineStyle = LineStyleType::Solid;
 
     static std::vector<char> s_Pattern{};
     static int s_Index = 0;
 
-    void GraphicsAlgorithm::UpdatePixelData(uint32_t* pixelData, uint32_t width, uint32_t height)
+    void GraphicsAlgorithm::UpdatePixelData(uint32_t* pixelData, int* idMap, uint32_t width, uint32_t height)
     {
         s_PixelData = pixelData;
+        s_IdMap = idMap;
         s_CanvasWidth = width;
         s_CanvasHeight = height;
     }
@@ -51,7 +54,12 @@ namespace Grafix
         }
     }
 
-    void GraphicsAlgorithm::DrawSquare(const glm::vec2& center, float length, const glm::vec3& color)
+    void GraphicsAlgorithm::SetID(int id)
+    {
+        s_ID = id;
+    }
+
+    void GraphicsAlgorithm::DrawSquare(glm::vec2 center, float length, const glm::vec3& color)
     {
         for (int i = center.y - length / 2.0f; i < center.y + length / 2.0f; i++)
             for (int j = center.x - length / 2.0f; j < center.x + length / 2.0f; j++)
@@ -73,7 +81,7 @@ namespace Grafix
         return s_CanvasHeight;
     }
 
-    void GraphicsAlgorithm::SetPixel(int x, int y, uint32_t colorValue)
+    void GraphicsAlgorithm::SetPixel(int x, int y, uint32_t color)
     {
         int halfWidth = (s_LineWidth - 1) >> 1;
 
@@ -85,14 +93,18 @@ namespace Grafix
         {
             for (int j = yMin; j < yMax; ++j)
                 for (int i = xMin; i < xMax; ++i)
-                    SetSinglePixel(i, j, colorValue);
+                    SetSinglePixel(i, j, color);
         }
     }
 
-    void GraphicsAlgorithm::SetSinglePixel(int x, int y, uint32_t colorValue)
+    void GraphicsAlgorithm::SetSinglePixel(int x, int y, uint32_t color)
     {
         if (x >= 0 && x < s_CanvasWidth && y >= 0 && y < s_CanvasHeight)
-            s_PixelData[x + y * s_CanvasWidth] = colorValue;
+        {
+            uint32_t index = x + y * s_CanvasWidth;
+            s_PixelData[index] = color;
+            s_IdMap[index] = s_ID;
+        }
     }
 
     uint32_t GraphicsAlgorithm::GetPixelValue(int x, int y)

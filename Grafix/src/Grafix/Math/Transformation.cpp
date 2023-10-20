@@ -14,7 +14,7 @@ namespace Grafix
                 ...    ...    ...    ...    ...
         */
 
-        glm::mat3 CalcTranslationMatrix(const glm::vec2& translation)
+        glm::mat3 CalcTranslationMatrix(glm::vec2 translation)
         {
             return glm::mat3{
                 1.0f, 0.0f, 0.0f,
@@ -35,7 +35,7 @@ namespace Grafix
             };
         }
 
-        glm::mat3 CalcScalingMatrix(const glm::vec2& scale)
+        glm::mat3 CalcScalingMatrix(glm::vec2 scale)
         {
             return glm::mat3{
                 scale.x, 0.0f, 0.0f,
@@ -44,7 +44,7 @@ namespace Grafix
             };
         }
 
-        glm::vec2 Math::Transform(const glm::mat3& matrix, const glm::vec2& point)
+        glm::vec2 Math::Transform(const glm::mat3& matrix, glm::vec2 point)
         {
             return glm::vec2(matrix * glm::vec3(point, 1.0f));
         }

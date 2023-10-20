@@ -33,16 +33,20 @@ namespace Grafix
         }
 
         delete[] m_Pixels;
+        delete[] m_IdMap;
         m_Pixels = new uint32_t[newWidth * newHeight];
+        m_IdMap = new int[newWidth * newHeight];
     }
 
     void Renderer::BeginScene(const Camera& camera)
     {
         s_ViewMatrix = camera.GetViewMatrix();
-        GraphicsAlgorithm::UpdatePixelData(m_Pixels, m_Image->GetWidth(), m_Image->GetHeight());
+        GraphicsAlgorithm::UpdatePixelData(m_Pixels, m_IdMap, m_Image->GetWidth(), m_Image->GetHeight());
 
         // Clear color
-        std::fill(m_Pixels, m_Pixels + m_Image->GetWidth() * m_Image->GetHeight(), RGBToUint32(m_ClearColor));
+        uint32_t clearColor = RGBToUint32(m_ClearColor);
+        std::fill(m_Pixels, m_Pixels + m_Image->GetWidth() * m_Image->GetHeight(), clearColor);
+        std::fill(m_IdMap, m_IdMap + m_Image->GetWidth() * m_Image->GetHeight(), -1);
     }
 
     void Renderer::EndScene()
@@ -50,30 +54,29 @@ namespace Grafix
         m_Image->SetPixels(m_Pixels);
     }
 
-    void Renderer::DrawLine(const glm::vec2& p0, const glm::vec2& p1, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, LineAlgorithmType algorithm)
+    int Renderer::ReadPixel(glm::vec2 pos) const
+    {
+        return m_IdMap[(int)pos.x + (int)pos.y * m_Image->GetWidth()];
+    }
+
+    // ******************************************************************************************************************************************
+    // Draw Functions
+    // ******************************************************************************************************************************************
+
+    void Renderer::DrawLine(glm::vec2 p0, glm::vec2 p1, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, LineAlgorithmType algorithm, int id)
     {
         DrawLine(TransformComponent(), p0, p1, color, lineWidth, lineStyle);
     }
 
-    // NEW
-    /*void Renderer::DrawLine(const TransformComponent& transform,const glm::vec2& p0,const glm::vec2& p1, const glm::vec3& color, LineStyle style, float dashLength)
-    {
-        ClipAlgorithm::CS_LineClip(p0, p1, m_ClipP0, m_ClipP1,transform,color,style,dashLength, s_ViewMatrix);
-        /*LineAlgorithm::Draw(
-            Math::Transform(s_ViewMatrix, Math::Transform(transform.GetTransformMatrix(), p0)),
-            Math::Transform(s_ViewMatrix, Math::Transform(transform.GetTransformMatrix(), p1)),
-            color, style, dashLength
-        );*/
-        ////}
+    ////void Renderer::SetClipRange(const glm::vec2 p0, const glm::vec2 p1)
+    ////{
+    ////    m_ClipP0 = p0;
+    ////    m_ClipP1 = p1;
+    ////}
 
-    void Renderer::SetClipRange(const glm::vec2 p0, const glm::vec2 p1)
+    void Renderer::DrawLine(const TransformComponent& transform, glm::vec2 p0, glm::vec2 p1, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, LineAlgorithmType algorithm, int id)
     {
-        m_ClipP0 = p0;
-        m_ClipP1 = p1;
-    }
-
-    void Renderer::DrawLine(const TransformComponent& transform, const glm::vec2& p0, const glm::vec2& p1, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, LineAlgorithmType algorithm)
-    {
+        GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(lineWidth, lineStyle);
 
         switch (algorithm)
@@ -97,13 +100,14 @@ namespace Grafix
         }
     }
 
-    void Renderer::DrawCircle(const glm::vec2& center, float radius, const glm::vec3& color, float lineWidth, LineStyleType lineStyle)
+    void Renderer::DrawCircle(glm::vec2 center, float radius, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
     {
         DrawCircle(TransformComponent(), center, radius, color, lineWidth, lineStyle);
     }
 
-    void Renderer::DrawCircle(const TransformComponent& transform, const glm::vec2& center, float radius, const glm::vec3& color, float lineWidth, LineStyleType lineStyle)
+    void Renderer::DrawCircle(const TransformComponent& transform, glm::vec2 center, float radius, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
     {
+        GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(lineWidth, lineStyle);
 
         CircleAlgorithm::Midpoint(
@@ -112,13 +116,14 @@ namespace Grafix
         );
     }
 
-    void Renderer::DrawArc(const glm::vec2& center, float radius, float angle1, float angle2, bool major, const glm::vec3& color, float lineWidth, LineStyleType lineStyle)
+    void Renderer::DrawArc(glm::vec2 center, float radius, float angle1, float angle2, bool major, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
     {
         DrawArc(TransformComponent(), center, radius, angle1, angle2, major, color, lineWidth, lineStyle);
     }
 
-    void Renderer::DrawArc(const TransformComponent& transform, const glm::vec2& center, float radius, float angle1, float angle2, bool major, const glm::vec3& color, float lineWidth, LineStyleType lineStyle)
+    void Renderer::DrawArc(const TransformComponent& transform, glm::vec2 center, float radius, float angle1, float angle2, bool major, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
     {
+        GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(lineWidth, lineStyle);
 
         glm::vec2 angle{ 0,0 };
@@ -140,13 +145,14 @@ namespace Grafix
         ArcAlgorithm::Midpoint(newCenter, radius, angle[0], angle[1], major, color);
     }
 
-    void Renderer::DrawPolygon(const std::vector<glm::vec2>& vertices, const glm::vec3& color)
+    void Renderer::DrawPolygon(const std::vector<glm::vec2>& vertices, const glm::vec3& color, int id)
     {
         DrawPolygon(TransformComponent(), vertices, color);
     }
 
-    void Renderer::DrawPolygon(const TransformComponent& transform, const std::vector<glm::vec2>& vertices, const glm::vec3& color)
+    void Renderer::DrawPolygon(const TransformComponent& transform, const std::vector<glm::vec2>& vertices, const glm::vec3& color, int id)
     {
+        GraphicsAlgorithm::SetID(id);
         std::vector<glm::vec2> transformedVertices(vertices);
 
         for (auto& vertex : transformedVertices)
@@ -156,15 +162,16 @@ namespace Grafix
     }
 
     void Renderer::DrawCurve(const std::vector<glm::vec2>& controlPoints, const glm::vec3& color, int order, float step,
-        std::vector<float>& knots, std::vector<float>& weights, float lineWidth, LineStyleType lineStyle, CurveAlgorithmType algorithm)
+        std::vector<float>& knots, std::vector<float>& weights, float lineWidth, LineStyleType lineStyle, CurveAlgorithmType algorithm, int id)
     {
         DrawCurve(TransformComponent(), controlPoints, color, order, step, knots, weights, lineWidth, lineStyle, algorithm);
     }
 
     void Renderer::DrawCurve(const TransformComponent& transform, const std::vector<glm::vec2>& controlPoints,
         const glm::vec3& color, int order, float step, std::vector<float>& knots,
-        std::vector<float>& weights, float lineWidth, LineStyleType lineStyle, CurveAlgorithmType algorithm)
+        std::vector<float>& weights, float lineWidth, LineStyleType lineStyle, CurveAlgorithmType algorithm, int id)
     {
+        GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(lineWidth, lineStyle);
 
         std::vector<glm::vec2> transformedControlPoints(controlPoints);
@@ -187,13 +194,14 @@ namespace Grafix
         }
     }
 
-    void Renderer::DrawCross(const glm::vec2& center, float radius, const glm::vec3& color)
+    void Renderer::DrawCross(glm::vec2 center, float radius, const glm::vec3& color, int id)
     {
         DrawCross(TransformComponent(), center, radius, color);
     }
 
-    void Renderer::DrawCross(const TransformComponent& transform, const glm::vec2& center, float radius, const glm::vec3& color)
+    void Renderer::DrawCross(const TransformComponent& transform, glm::vec2 center, float radius, const glm::vec3& color, int id)
     {
+        GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(1.0f, LineStyleType::Solid);
         glm::vec2 transformedCenter = Math::Transform(s_ViewMatrix, Math::Transform(transform.GetTransformMatrix(), center));
 
@@ -210,12 +218,13 @@ namespace Grafix
         );
     }
 
-    void Renderer::DrawSquare(const glm::vec2& center, float length, const glm::vec3& color)
+    void Renderer::DrawSquare(glm::vec2 center, float length, const glm::vec3& color, int id)
     {
+        GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::DrawSquare(center, length, color);
     }
 
-    void Renderer::Fill(const glm::vec2& seedPoint, const glm::vec3& fillColor)
+    void Renderer::Fill(glm::vec2 seedPoint, const glm::vec3& fillColor)
     {
         uint32_t oldColor = m_Pixels[(uint32_t)seedPoint.x + (uint32_t)seedPoint.y * m_Image->GetWidth()];
         SeedFillAlgorithm::Fill(seedPoint, RGBToUint32(fillColor), oldColor);

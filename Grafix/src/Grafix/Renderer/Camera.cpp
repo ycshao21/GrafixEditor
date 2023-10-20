@@ -21,7 +21,7 @@ namespace Grafix
         UpdateViewMatrix();
     }
 
-    void Camera::SetPosition(const glm::vec2& position)
+    void Camera::SetPosition(glm::vec2 position)
     {
         m_Position = position;
         UpdateViewMatrix();

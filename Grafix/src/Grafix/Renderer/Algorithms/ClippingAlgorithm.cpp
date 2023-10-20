@@ -4,41 +4,27 @@
 
 namespace Grafix
 {
-    // **************************************************************************************************************
+    // ***************************************************************************************************************************************************************
     // Line Clipping
-    // **************************************************************************************************************
+    // ***************************************************************************************************************************************************************
 
     static const int LEFT = 1;
     static const int RIGHT = 2;
     static const int BOTTOM = 4;
     static const int TOP = 8;
 
-    ////void ClipAlgorithm::CS_LineClip(const glm::vec2& p0,const glm::vec2& p1, glm::vec2 p2, glm::vec2 p3, const TransformComponent& transform, const glm::vec3& color, LineStyle style, float dashLength, const glm::mat3& s_ViewMatrix)
-    ////{
-    ////    LineAlgorithm::Draw(
-    ////        Math::Transform(s_ViewMatrix, Math::Transform(transform.GetTransformMatrix(), P0)),
-    ////        Math::Transform(s_ViewMatrix, Math::Transform(transform.GetTransformMatrix(), P1)),
-    ////        color, style, dashLength
-    ////    );
-    ////}
-
-    std::vector<glm::vec2> ClippingAlgorithm::CohenSutherland(glm::vec2 beginPoint, glm::vec2 endPoint, const glm::vec2& leftBottom, const glm::vec2& rightTop)
+    std::vector<glm::vec2> ClippingAlgorithm::CohenSutherland(glm::vec2 beginPoint, glm::vec2 endPoint, glm::vec2 leftBottom, glm::vec2 rightTop)
     {
         int code = 0;
         int code1 = Encode(beginPoint, leftBottom, rightTop);
         int code2 = Encode(endPoint, leftBottom, rightTop);
 
         int x = 0, y = 0;
-        std::vector<glm::vec2> res;
 
         while (code1 != 0 || code2 != 0)
         {
             if ((code1 & code2) != 0)
-            {
-                res.push_back({ -1, -1 });
-                res.push_back({ -1, -1 });
-                return res;
-            }
+                return { { -1.0f, -1.0f }, { -1.0f, -1.0f } };
 
             code = code1 == 0 ? code2 : code1;
 
@@ -76,14 +62,10 @@ namespace Grafix
                 code2 = Encode(endPoint, leftBottom, rightTop);
             }
         }
-
-        res.push_back(beginPoint);
-        res.push_back(endPoint);
-
-        return res;
+        return { beginPoint, endPoint };
     }
 
-    std::vector<glm::vec2> ClippingAlgorithm::MidPoint(glm::vec2 beginPoint, glm::vec2 endPoint, const glm::vec2& leftBottom, const glm::vec2& rightTop)
+    std::vector<glm::vec2> ClippingAlgorithm::MidPoint(glm::vec2 beginPoint, glm::vec2 endPoint, glm::vec2 leftBottom, glm::vec2 rightTop)
     {
         std::vector<glm::vec2> result;
 
@@ -93,18 +75,10 @@ namespace Grafix
         float epsilon = 0.1f;
 
         if (code1 == 0 && code2 == 0)
-        {
-            result.push_back(beginPoint);
-            result.push_back(endPoint);
-            return result;
-        }
+            return { beginPoint, endPoint };
 
         if ((code1 & code2) != 0)
-        {
-            result.push_back(glm::vec2{ -1, -1 });
-            result.push_back(glm::vec2{ -1, -1 });
-            return result;
-        }
+            return { { -1.0f, -1.0f }, { -1.0f, -1.0f } };
 
         if (code1 != 0)
         {
@@ -148,13 +122,10 @@ namespace Grafix
             endPoint = end;
         }
 
-        result.push_back(beginPoint);
-        result.push_back(endPoint);
-
-        return result;
+        return { beginPoint, endPoint };
     }
 
-    int ClippingAlgorithm::Encode(glm::vec2 point, const glm::vec2& leftBottom, const glm::vec2& rightTop)
+    int ClippingAlgorithm::Encode(glm::vec2 point, glm::vec2 leftBottom, glm::vec2 rightTop)
     {
         int code = 0;
 
@@ -183,11 +154,10 @@ namespace Grafix
             int j = (i + 1) % clippingArea.size();
             clippedVertices = Clip(clippedVertices, clippingArea[i], clippingArea[j]);
         }
-
         return clippedVertices;
     }
 
-    std::vector<glm::vec2> ClippingAlgorithm::Clip(std::vector<glm::vec2> vertices, const glm::vec2& point1, const glm::vec2& point2)
+    std::vector<glm::vec2> ClippingAlgorithm::Clip(std::vector<glm::vec2> vertices, glm::vec2 point1, glm::vec2 point2)
     {
         std::vector<glm::vec2> clippedVertices;
 
@@ -219,7 +189,7 @@ namespace Grafix
         return clippedVertices;
     }
 
-    glm::vec2 ClippingAlgorithm::Intersection(const glm::vec2& point1, const glm::vec2& point2, const glm::vec2& point3, const glm::vec2& point4)
+    glm::vec2 ClippingAlgorithm::Intersection(glm::vec2 point1, glm::vec2 point2, glm::vec2 point3, glm::vec2 point4)
     {
         glm::vec2 point;
 

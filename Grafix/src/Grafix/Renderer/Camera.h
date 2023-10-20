@@ -19,9 +19,8 @@ namespace Grafix
 
         void SetViewportSize(float width, float height);
 
-        glm::vec2& GetPosition() { return m_Position; }
-        const glm::vec2& GetPosition() const { return m_Position; }
-        void SetPosition(const glm::vec2& position);
+        glm::vec2 GetPosition() { return m_Position; }
+        void SetPosition(glm::vec2 position);
 
         glm::mat3 GetTranslationMatrix() const;
         const glm::mat3& GetViewMatrix() const { return m_ViewMatrix; }

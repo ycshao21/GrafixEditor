@@ -6,7 +6,7 @@
 
 namespace Grafix
 {
-    void ArcAlgorithm::Midpoint(const glm::vec2& center, float radius, float angle1, float angle2, bool major, const glm::vec3& color)
+    void ArcAlgorithm::Midpoint(glm::vec2 center, float radius, float angle1, float angle2, bool major, const glm::vec3& color)
     {
         if (glm::abs(angle2 - angle1) < 1e-9f)
             return;
@@ -29,7 +29,7 @@ namespace Grafix
 
         while (a <= b)
         {
-            SetArcPixels((int)center.x, (int)center.y, a, b, radius, beginAngle, endAngle, colorValue);
+            SetArcPixels((int)center.x, (int)center.y, a, b, beginAngle, endAngle, colorValue);
 
             if (e < 0)
             {
@@ -44,7 +44,7 @@ namespace Grafix
         }
     }
 
-    void ArcAlgorithm::SetArcPixels(int centerX, int centerY, int x, int y, float radius, float beginAngle, float endAngle, uint32_t colorValue)
+    void ArcAlgorithm::SetArcPixels(int centerX, int centerY, int x, int y, float beginAngle, float endAngle, uint32_t colorValue)
     {
         if (IsInRange(x, y, beginAngle, endAngle))
             SetPixel(centerX + x, centerY + y, colorValue);

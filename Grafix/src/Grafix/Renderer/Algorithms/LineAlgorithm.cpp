@@ -3,7 +3,7 @@
 
 namespace Grafix
 {
-    void LineAlgorithm::Midpoint(const glm::vec2& p0, const glm::vec2& p1, const glm::vec3& color)
+    void LineAlgorithm::Midpoint(glm::vec2 p0, glm::vec2 p1, const glm::vec3& color)
     {
         uint32_t colorValue = RGBToUint32(color);
 
@@ -55,7 +55,7 @@ namespace Grafix
         }
     }
 
-    void LineAlgorithm::Bresenham(const glm::vec2& p0, const glm::vec2& p1, const glm::vec3& color)
+    void LineAlgorithm::Bresenham(glm::vec2 p0, glm::vec2 p1, const glm::vec3& color)
     {
         uint32_t colorValue = RGBToUint32(color);
 

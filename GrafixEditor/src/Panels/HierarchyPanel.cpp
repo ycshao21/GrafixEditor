@@ -337,7 +337,7 @@ namespace Grafix
 
     void HierarchyPanel::DrawLineWidthAndStyleControl(float* lineWidth, LineStyleType& lineStyle)
     {
-        DrawFloatControl("Width", lineWidth, 1.0f, 50.0f);
+        DrawFloatControl("Width", lineWidth, 0.0f, 50.0f);
 
         const char* lineStyleStrings[] = { "Solid", "Dashed", "Dotted" };
         const char* currentLineStyleString = lineStyleStrings[(int)lineStyle];

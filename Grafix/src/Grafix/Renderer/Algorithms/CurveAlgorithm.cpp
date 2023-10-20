@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "CurveAlgorithm.h"
-#include "Grafix/Math/Math.h"
 
 namespace Grafix
 {

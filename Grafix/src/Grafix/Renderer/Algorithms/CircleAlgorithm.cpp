@@ -3,7 +3,7 @@
 
 namespace Grafix
 {
-    void CircleAlgorithm::Midpoint(const glm::vec2& center, float radius, const glm::vec3& color)
+    void CircleAlgorithm::Midpoint(glm::vec2 center, float radius, const glm::vec3& color)
     {
         uint32_t colorValue = RGBToUint32(color);
 

@@ -3,7 +3,7 @@
 
 namespace Grafix
 {
-    void SeedFillAlgorithm::Fill(const glm::vec2& seedPoint, uint32_t fillColor, uint32_t oldColor)
+    void SeedFillAlgorithm::Fill(glm::vec2 seedPoint, uint32_t fillColor, uint32_t oldColor)
     {
         if (fillColor == oldColor)
             return;

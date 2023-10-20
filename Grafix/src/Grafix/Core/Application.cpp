@@ -14,7 +14,7 @@
 #    pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
-#define IMGUI_UNLIMITED_FRAME_RATE 1
+#define IMGUI_UNLIMITED_FRAME_RATE 0
 
 #ifdef GF_DEBUG
 #    define VULKAN_DEBUG_REPORT
@@ -343,7 +343,7 @@ namespace Grafix
             m_Window->OnUpdate();
 
             m_Stopwatch.Stop();
-            m_FPS = 1.0f / m_Stopwatch.GetSeconds();
+            m_LastFrameTime = m_Stopwatch.GetSeconds();
         }
     }
 
@@ -701,4 +701,4 @@ namespace Grafix
     {
         s_ResourceFreeQueue[s_CurrentFrameIndex].emplace_back(func);
     }
-    }
+}

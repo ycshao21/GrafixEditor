@@ -14,10 +14,10 @@ namespace Grafix
 
     namespace Math
     {
-        glm::mat3 CalcTranslationMatrix(const glm::vec2& translation);
+        glm::mat3 CalcTranslationMatrix(glm::vec2 translation);
         glm::mat3 CalcRotationMatrix(float rotation);
-        glm::mat3 CalcScalingMatrix(const glm::vec2& scale);
+        glm::mat3 CalcScalingMatrix(glm::vec2 scale);
 
-        glm::vec2 Transform(const glm::mat3& matrix, const glm::vec2& point);
+        glm::vec2 Transform(const glm::mat3& matrix, glm::vec2 point);
     }
 }

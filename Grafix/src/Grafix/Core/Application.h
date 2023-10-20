@@ -40,7 +40,7 @@ namespace Grafix
         inline bool IsMinimized() { return m_Minimized; }
         inline ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
-        inline float GetFPS() const { return m_FPS; }
+        inline float GetLastFrameTime() const { return m_LastFrameTime; }
 
         // Window
         inline Window& GetWindow() { return *m_Window; }
@@ -81,7 +81,7 @@ namespace Grafix
         ImGuiLayer* m_ImGuiLayer;
 
         Stopwatch m_Stopwatch;
-        float m_FPS;
+        float m_LastFrameTime;
     };
 
     // Define the function in your own application.

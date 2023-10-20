@@ -32,10 +32,10 @@ namespace Grafix
         bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 
         void UpdateMousePos();
-        bool IsMouseInViewport() const;
+        bool IsMouseInCanvas() const;
 
         void OnMoveToolUpdate();
-        void OnBucketToolUpdate();
+        void OnFillToolUpdate();
         void OnPolygonToolUpdate();
         void OnLineToolUpdate();
         void OnArcToolUpdate();
@@ -60,6 +60,7 @@ namespace Grafix
         glm::vec2 m_MousePosInCanvas{ 0.0f, 0.0f };
         glm::vec2 m_MousePosInWorld{ 0.0f, 0.0f };
         glm::vec2 m_MousePositionDelta = { 0.0f, 0.0f };
+        Entity m_HoveredEntity;
 
         Renderer m_Renderer;
         Camera m_Camera;
