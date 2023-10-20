@@ -11,7 +11,7 @@ namespace Grafix
         Allocate();
 
         if (data)
-            SetPiexels(data);
+            SetPixels(data);
     }
 
     Image::~Image()
@@ -19,7 +19,7 @@ namespace Grafix
         Release();
     }
 
-    void Image::SetPiexels(const void* pixels)
+    void Image::SetPixels(const void* pixels)
     {
         VkResult result;
         VkDevice device = Application::GetDevice();

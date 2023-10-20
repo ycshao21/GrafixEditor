@@ -33,35 +33,17 @@ namespace Grafix
         int d = (a << 1) + b;
         int d1 = a << 1, d2 = (a + b) << 1;
 
-        ////uint32_t dashLength = 40;
-        ////uint32_t gapLength = std::max(dashLength / 5, (uint32_t)1);
-        ////std::vector<char> pattern(dashLength + gapLength, '0');
-        ////for (uint32_t i = 0; i < dashLength; ++i)
-        ////    pattern[i] = '1';
-
-        ////if (lineStyle == LineStyleType::Dotted)
-        ////{
-        ////    const char* dot = "000011000011111111111";
-        ////    pattern.clear();
-        ////    pattern.resize(strlen(dot));
-        ////    for (uint32_t i = 0; i < pattern.size(); ++i)
-        ////        pattern[i] = dot[i];
-        ////}
-
         int x = x0, y = y0;
         int count = 0;
 
         while (x <= x1)
         {
-            ////if (lineStyle == LineStyleType::Solid ||
-            ////    (lineStyle == LineStyleType::Dashed && pattern[count % pattern.size()] == '1')
-            ////    || (lineStyle == LineStyleType::Dotted && pattern[count % pattern.size()] == '1'))
-            ////{
             if (XYSwapped)
                 SetPixel(y, x, colorValue);
             else
                 SetPixel(x, y, colorValue);
-            ////}
+
+            UpdateIndexInPattern();
 
             if (d < 0)
                 y += sy, d += d2;
@@ -100,35 +82,16 @@ namespace Grafix
         int sy = dy > 0 ? 1 : -1;
         dy = std::abs(dy);
 
-        ////uint32_t dashLength = 40;
-        ////uint32_t gapLength = std::max(dashLength / 5, (uint32_t)1);
-        ////std::vector<char> pattern(dashLength + gapLength, '0');
-        ////for (uint32_t i = 0; i < dashLength; ++i)
-        ////    pattern[i] = '1';
-
-        ////if (lineStyle == LineStyleType::Dotted)
-        ////{
-        ////    const char* dot = "000011000011111111111";
-        ////    pattern.clear();
-        ////    pattern.resize(strlen(dot));
-        ////    for (uint32_t i = 0; i < pattern.size(); ++i)
-        ////        pattern[i] = dot[i];
-        ////}
-
         int x = x0, y = y0;
 
         for (int i = 0; i <= dx; i++)
         {
-            ////if (lineStyle == LineStyleType::Solid ||
-            ////    (lineStyle == LineStyleType::Dashed && pattern[i % pattern.size()] == '1')
-            ////    || (lineStyle == LineStyleType::Dotted && pattern[i % pattern.size()] == '1'))
-            ////{
-                // Set pixel
             if (XYSwapped)
                 SetPixel(y, x, colorValue);
             else
                 SetPixel(x, y, colorValue);
-            ////}
+
+            UpdateIndexInPattern();
 
             ++x;
             e += dy << 1;
