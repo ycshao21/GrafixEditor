@@ -14,11 +14,12 @@ namespace Grafix
         static void SetLineProperties(float lineWidth, LineStyleType lineStyle);
 
         static void DrawSquare(const glm::vec2& center, float length, const glm::vec3& color);
+        static void UpdateIndexInPattern();
     protected:
         static uint32_t GetWidth();
         static uint32_t GetHeight();
 
-        static void SetPixel(int x, int y, uint32_t colorValue,bool moveForward = true);
+        static void SetPixel(int x, int y, uint32_t colorValue);
         static void SetSinglePixel(int x, int y, uint32_t colorValue);
 
         static uint32_t GetPixelValue(int x, int y);
