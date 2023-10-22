@@ -178,6 +178,8 @@ namespace Grafix
                 m_HoveredEntity = pixelData < 0 ? Entity() : Entity((entt::entity)pixelData, m_EditorScene.get());
             }
 
+            ImGui::ShowDemoWindow();
+
             UI_MenuBar();
             UI_Viewport();
             UI_Color();
@@ -394,8 +396,6 @@ namespace Grafix
             Entity entity = m_HierarchyPanel.GetSelectedEntity();
             auto& arc = entity.GetComponent<ArcComponent>();
 
-            arc.Color = m_PickedColor;
-
             // If right mouse button is pressed, cancel drawing
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
             {
@@ -608,7 +608,7 @@ namespace Grafix
             if (m_ViewportHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 // Confirm
-                if (polygon.Vertices.front() == currentVertex)
+                if (currentVertex == polygon.Vertices.front())
                 {
                     if (polygon.Vertices.size() <= 3)
                     {

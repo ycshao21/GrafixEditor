@@ -221,8 +221,7 @@ namespace Grafix
 
     void HierarchyPanel::DrawItem(Entity entity)
     {
-        bool selected = m_SelectedEntity == entity;
-        ImGui::Selectable(entity.GetTag().c_str(), &selected);
+        ImGui::Selectable(entity.GetTag().c_str(), m_SelectedEntity == entity);
         if (ImGui::IsItemClicked())
             m_SelectedEntity = entity;
     }
