@@ -5,14 +5,13 @@ namespace Grafix
 {
     void CircleAlgorithm::Midpoint(glm::vec2 center, float radius, const glm::vec3& color)
     {
+        // Preprocess the values
+        const int centerX = Math::Round(center.x), centerY = Math::Round(center.y);
+        const int r = Math::Round(radius);
         uint32_t colorValue = RGBToUint32(color);
 
-        int centerX = (int)center.x;
-        int centerY = (int)center.y;
-
-        int x = 0, y = (int)radius;
-        int e = 1 - (int)radius;
-
+        int x = 0, y = r;
+        int e = 1 - r;
         while (x <= y)
         {
             SetCirclePixels(centerX, centerY, x, y, colorValue);
@@ -24,25 +23,25 @@ namespace Grafix
             else
             {
                 e += 2 * (x - y) + 5;
-                y--;
+                --y;
             }
-            x++;
+            ++x;
         }
     }
 
     void CircleAlgorithm::SetCirclePixels(int centerX, int centerY, int x, int y, uint32_t colorValue)
     {
-        SetPixel(centerX + x, centerY + y, colorValue);
-        SetPixel(centerX + y, centerY + x, colorValue);
+        SetPoint(centerX + x, centerY + y, colorValue);
+        SetPoint(centerX + y, centerY + x, colorValue);
 
-        SetPixel(centerX - x, centerY + y, colorValue);
-        SetPixel(centerX - y, centerY + x, colorValue);
+        SetPoint(centerX - x, centerY + y, colorValue);
+        SetPoint(centerX - y, centerY + x, colorValue);
 
-        SetPixel(centerX - x, centerY - y, colorValue);
-        SetPixel(centerX - y, centerY - x, colorValue);
+        SetPoint(centerX - x, centerY - y, colorValue);
+        SetPoint(centerX - y, centerY - x, colorValue);
 
-        SetPixel(centerX + x, centerY - y, colorValue);
-        SetPixel(centerX + y, centerY - x, colorValue);
+        SetPoint(centerX + x, centerY - y, colorValue);
+        SetPoint(centerX + y, centerY - x, colorValue);
 
         UpdateLinePatternIndex();
     }

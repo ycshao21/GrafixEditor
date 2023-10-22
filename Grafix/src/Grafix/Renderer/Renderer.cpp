@@ -2,7 +2,7 @@
 #include "Renderer.h"
 
 #include "Grafix/Utils/ColorConvert.hpp"
-#include "Grafix/Math/Transformation.h"
+#include "Grafix/Math/Math.h"
 
 #include "Algorithms/GraphicsAlgorithm.h"
 #include "Algorithms/LineAlgorithm.h"
@@ -187,8 +187,7 @@ namespace Grafix
         }
         case CurveAlgorithmType::NURBS:
         {
-            if (controlPoints.size() >= order)
-                CurveAlgorithm::NURBS(transformedControlPoints, order, step, color, knots, weights);
+            CurveAlgorithm::NURBS(transformedControlPoints, order, step, color, knots, weights);
             break;
         }
         }
@@ -226,7 +225,8 @@ namespace Grafix
 
     void Renderer::Fill(glm::vec2 seedPoint, const glm::vec3& fillColor)
     {
+        GraphicsAlgorithm::SetID(-1);
         uint32_t oldColor = m_Pixels[(uint32_t)seedPoint.x + (uint32_t)seedPoint.y * m_Image->GetWidth()];
-        SeedFillAlgorithm::Fill(seedPoint, RGBToUint32(fillColor), oldColor);
+        SeedFillAlgorithm::FloodFill(seedPoint, RGBToUint32(fillColor), oldColor);
     }
 }

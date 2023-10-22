@@ -4,6 +4,7 @@
 
 #include "Grafix/Scene/Components.h"
 #include "Grafix/Utils/ColorConvert.hpp"
+#include "Grafix/Math/Math.h"
 
 namespace Grafix
 {
@@ -18,12 +19,15 @@ namespace Grafix
         static void DrawSquare(glm::vec2 center, float length, const glm::vec3& color);
         static void UpdateLinePatternIndex();
     protected:
-        static uint32_t GetWidth();
-        static uint32_t GetHeight();
+        static int GetCanvasWidth();
+        static int GetCanvasHeight();
 
+        static bool IsInCanvas(int x, int y);
+
+        static void SetPoint(int x, int y, uint32_t color);
         static void SetPixel(int x, int y, uint32_t color);
-        static void SetSinglePixel(int x, int y, uint32_t color);
+        static void DrawSquare(int centerX, int centerY, int length, uint32_t color);
 
-        static uint32_t GetPixelValue(int x, int y);
+        static uint32_t GetPixel(int x, int y);
     };
 }

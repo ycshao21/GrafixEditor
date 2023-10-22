@@ -15,7 +15,7 @@ namespace Grafix
         static glm::vec2 GetBezierPoint(const std::vector<glm::vec2>& controlPoints, float u);
         // For NURBS
         static float BaseFunction(int i, int k, float u, const std::vector<float>& knots);
-        static void GenerateKnots(int controlPointSize, int order, std::vector<float>& knots);
-        static void GenerateWeights(int controlPointSize, std::vector<float>& weights);
+        static void GenerateKnots(std::vector<float>& knots, int controlPointSize, int order);
+        static void GenerateWeights(std::vector<float>& weights, int controlPointSize);
     };
 }

@@ -41,10 +41,6 @@ namespace Grafix
     {
     }
 
-    void Scene::OnUpdateEditor()
-    {
-    }
-
     void Scene::Clear()
     {
         m_Registry.clear();

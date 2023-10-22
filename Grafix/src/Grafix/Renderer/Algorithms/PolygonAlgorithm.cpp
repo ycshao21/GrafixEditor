@@ -7,19 +7,18 @@ namespace Grafix
 {
     void PolygonAlgorithm::Scanline(const std::vector<glm::vec2>& vertices, const glm::vec3& color)
     {
-        std::vector<glm::vec2> clippedVertices = CalculateClippedVertices(vertices);
+        const std::vector<glm::vec2> clippedVertices = CalculateClippedVertices(vertices);
         if (clippedVertices.size() <= 2)
             return;
 
         uint32_t colorValue = RGBToUint32(color);
 
-        int yMax = (int)(clippedVertices[0].y + 0.5);
-        int yMin = (int)(clippedVertices[0].y + 0.5);
-
+        // Find yMax and yMin
+        int yMax = Math::Round(clippedVertices[0].y);
+        int yMin = yMax;
         for (int i = 1; i < clippedVertices.size(); ++i)
         {
-            int roundedY = (int)(clippedVertices[i].y + 0.5);
-
+            int roundedY = Math::Round(clippedVertices[i].y);
             if (roundedY > yMax)
                 yMax = roundedY;
 
@@ -29,39 +28,40 @@ namespace Grafix
 
         // Initialize ET
         EdgeTable ET(yMax + 1);
+        std::set<int> yValues;
 
         for (int i = 0; i < clippedVertices.size(); ++i)
         {
             const glm::vec2* bottomVertex = &clippedVertices[i];
             const glm::vec2* topVertex = (i < clippedVertices.size() - 1) ? &clippedVertices[i + 1] : &clippedVertices[0];
 
-            int bottomY = (int)(bottomVertex->y + 0.5), topY = (int)(topVertex->y + 0.5);
+            int bottomY = Math::Round(bottomVertex->y), topY = Math::Round(topVertex->y);
             if (bottomY == topY)
-            {
                 continue;
-            }
-            else if (bottomY > topY)
+
+            if (bottomY > topY)
             {
                 std::swap(bottomVertex, topVertex);
                 std::swap(bottomY, topY);
             }
 
             float deltaX = (topVertex->x - bottomVertex->x) / (topVertex->y - bottomVertex->y);
-
-            ET[bottomY].push_back(Edge(topY, bottomVertex->x, deltaX));
-            std::sort(ET[bottomY].begin(), ET[bottomY].end());
+            ET[bottomY].emplace_back(topY, bottomVertex->x, deltaX);
+            yValues.emplace(bottomY);
         }
+
+        for (int y : yValues)
+            std::sort(ET[y].begin(), ET[y].end());
 
         // Create AEL
         ActiveEdgeTable AEL{};
-
         for (int y = yMin; y < yMax; ++y)
         {
             // If there are new edges, add them to AEL
             if (!ET[y].empty())
             {
                 for (Edge& edge : ET[y])
-                    AEL.push_back(edge);
+                    AEL.push_back(std::move(edge));
             }
 
             std::sort(AEL.begin(), AEL.end());
@@ -79,9 +79,9 @@ namespace Grafix
             // Draw the scanline
             for (int i = 0; i < AEL.size(); i += 2)
             {
-                int x1 = (int)(AEL[i].X + 0.5), x2 = (int)(AEL[i + 1].X + 0.5);
+                int x1 = Math::Round(AEL[i].X), x2 = Math::Round(AEL[i + 1].X);
                 for (int x = x1; x < x2; ++x)
-                    SetSinglePixel(x, y, colorValue);
+                    SetPixel(x, y, colorValue);
             }
 
             for (Edge& edge : AEL)
@@ -91,7 +91,7 @@ namespace Grafix
 
     std::vector<glm::vec2> PolygonAlgorithm::CalculateClippedVertices(const std::vector<glm::vec2>& vertices)
     {
-        float canvasWidth = (float)GetWidth(), canvasHeight = (float)GetHeight();
+        float canvasWidth = (float)GetCanvasWidth(), canvasHeight = (float)GetCanvasHeight();
 
         std::vector<glm::vec2> clippingArea{
             { 0.0f, 0.0f },

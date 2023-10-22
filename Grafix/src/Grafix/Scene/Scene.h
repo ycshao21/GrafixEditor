@@ -28,8 +28,6 @@ namespace Grafix
         }
 
         void OnUpdate();
-        void OnUpdateEditor();
-
         void Clear();
     private:
         entt::registry m_Registry;

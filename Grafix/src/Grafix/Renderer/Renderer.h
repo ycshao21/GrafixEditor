@@ -64,5 +64,7 @@ namespace Grafix
         glm::vec2 m_ClipP0 = { 0.0f, 0.0f };
         glm::vec2 m_ClipP1 = { 1280, 720 };
         glm::vec3 m_ClearColor = { 0.158f, 0.191f, 0.214f };
+
+        friend class GraphicsAlgorithm;
     };
 }

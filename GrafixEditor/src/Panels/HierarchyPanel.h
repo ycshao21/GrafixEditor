@@ -18,6 +18,8 @@ namespace Grafix
         void SetTransforming() { m_IsTransforming = true; }
         bool IsTransforming() const { return m_IsTransforming; }
 
+        bool IsModalOpen() const { return m_IsModalOpen; }
+
         void OnUIRender();
     private:
         void DrawItem(Entity entity);

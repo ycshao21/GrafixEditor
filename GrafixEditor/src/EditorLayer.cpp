@@ -1,7 +1,7 @@
 #include "EditorLayer.h"
 
 #include "Grafix/Renderer/Algorithms/ClippingAlgorithm.h"
-#include "Grafix/Math/Transformation.h"
+#include "Grafix/Math/Math.h"
 
 namespace Grafix
 {
@@ -116,15 +116,19 @@ namespace Grafix
         ////m_Camera.SetPosition(glm::vec2{ transform.Translation.x - 320.f, 0.0f });
         ////m_Camera.OnUpdate();
 
-        switch (m_ToolState)
+        if (!m_HierarchyPanel.IsModalOpen())
         {
-        case ToolState::Move: { OnMoveToolUpdate(); break; }
-        case ToolState::Fill: { OnFillToolUpdate(); break; }
-        case ToolState::Line: { OnLineToolUpdate(); break; }
-        case ToolState::Arc: { OnArcToolUpdate(); break; }
-        case ToolState::Circle: { OnCircleToolUpdate(); break; }
-        case ToolState::Polygon: { OnPolygonToolUpdate(); break; }
-        case ToolState::Curve: { OnCurveUpdate(); break; }
+            switch (m_ToolState)
+            {
+            case ToolState::Move: { OnMoveToolUpdate(); break; }
+            case ToolState::Line: { OnLineToolUpdate(); break; }
+            case ToolState::Circle: { OnCircleToolUpdate(); break; }
+            case ToolState::Arc: { OnArcToolUpdate(); break; }
+            case ToolState::Fill: { OnFillToolUpdate(); break; }
+            case ToolState::Clip: { OnClipToolUpdate(); break; }
+            case ToolState::Polygon: { OnPolygonToolUpdate(); break; }
+            case ToolState::Curve: { OnCurveUpdate(); break; }
+            }
         }
 
         m_EditorScene->OnUpdate();
@@ -516,51 +520,51 @@ namespace Grafix
 
     void EditorLayer::OnClipToolUpdate()
     {
-        if (!m_IsDrawing)
-        {
-            if (m_ViewportHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                m_IsDrawing = true;
+        ////if (!m_IsDrawing)
+        ////{
+        ////    if (m_ViewportHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        ////    {
+        ////        m_IsDrawing = true;
 
-                Entity entity = m_EditorScene->CreateEntity("Clip");
-                m_HierarchyPanel.SetSelectedEntity(entity);
+        ////        Entity entity = m_EditorScene->CreateEntity("Clip");
+        ////        m_HierarchyPanel.SetSelectedEntity(entity);
 
-                auto& clip = entity.AddComponent<ClipComponent>();
+        ////        auto& clip = entity.AddComponent<ClipComponent>();
 
-                clip.P0 = m_MousePosInWorld;
-                clip.P1 = m_MousePosInWorld;
-                ////m_Renderer.SetClipRange(clip.P0, clip.P1);
-            }
-        }
-        else
-        {
-            Entity entity = m_HierarchyPanel.GetSelectedEntity();
-            auto& clip = entity.GetComponent<ClipComponent>();
+        ////        clip.P0 = m_MousePosInWorld;
+        ////        clip.P1 = m_MousePosInWorld;
+        ////        ////m_Renderer.SetClipRange(clip.P0, clip.P1);
+        ////    }
+        ////}
+        ////else
+        ////{
+        ////    Entity entity = m_HierarchyPanel.GetSelectedEntity();
+        ////    auto& clip = entity.GetComponent<ClipComponent>();
 
-            // If right mouse button is pressed, cancel drawing
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-            {
-                m_IsDrawing = false;
-                m_EditorScene->RemoveEntity(entity);
-                m_HierarchyPanel.SetSelectedEntity({});
-                return;
-            }
+        ////    // If right mouse button is pressed, cancel drawing
+        ////    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+        ////    {
+        ////        m_IsDrawing = false;
+        ////        m_EditorScene->RemoveEntity(entity);
+        ////        m_HierarchyPanel.SetSelectedEntity({});
+        ////        return;
+        ////    }
 
-            clip.P1 = m_MousePosInWorld;
-            ////m_Renderer.SetClipRange(clip.P0, clip.P1);
+        ////    clip.P1 = m_MousePosInWorld;
+        ////    ////m_Renderer.SetClipRange(clip.P0, clip.P1);
 
-            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                m_IsDrawing = false;
+        ////    if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        ////    {
+        ////        m_IsDrawing = false;
 
-                if (glm::distance(clip.P0, clip.P1) < 0.1f)
-                {
-                    m_EditorScene->RemoveEntity(entity);
-                    m_HierarchyPanel.SetSelectedEntity({});
-                    ////m_Renderer.SetClipRange(glm::vec2(0.0f, 0.0f), glm::vec2(m_CanvasWidth, m_CanvasHeight));
-                }
-            }
-        }
+        ////        if (glm::distance(clip.P0, clip.P1) < 0.1f)
+        ////        {
+        ////            m_EditorScene->RemoveEntity(entity);
+        ////            m_HierarchyPanel.SetSelectedEntity({});
+        ////            ////m_Renderer.SetClipRange(glm::vec2(0.0f, 0.0f), glm::vec2(m_CanvasWidth, m_CanvasHeight));
+        ////        }
+        ////    }
+        ////}
     }
 
     void EditorLayer::OnPolygonToolUpdate()
@@ -751,6 +755,7 @@ namespace Grafix
                     {
                         GF_INFO("Switched to {0} tool.", name);
                         m_ToolState = state;
+                        m_HierarchyPanel.SetSelectedEntity({});
                     }
                 };
 
@@ -769,7 +774,7 @@ namespace Grafix
     void EditorLayer::UI_Info()
     {
         ImGui::Begin("Info");
-        ImGui::Text("Last Frame Time: %.6f", Application::Get().GetLastFrameTime());
+        ImGui::Text("Last Frame Time: %.5fs", Application::Get().GetLastFrameTime());
 
         ImGui::Separator();
 
@@ -786,7 +791,7 @@ namespace Grafix
         ImGui::Separator();
 
         glm::vec2 cameraPos = m_Camera.GetPosition();
-        ImGui::Text("Camera Position: (%d, %d)", (int)cameraPos.x, (int)cameraPos.y);
+        ImGui::Text("Camera Position: (%.3f, %.3f)", cameraPos.x, cameraPos.y);
 
         if (IsMouseInCanvas())
         {
@@ -817,14 +822,16 @@ namespace Grafix
                 color = glm::value_ptr(selectedEntity.GetComponent<CurveComponent>().Color);
 
             if (color)
+            {
                 m_PickedColor = glm::vec3(color[0], color[1], color[2]);
+                ImGui::ColorPicker3("Color", color);
+            }
         }
         else
         {
-            color = glm::value_ptr(m_PickedColor);
+            ImGui::ColorPicker3("Color", glm::value_ptr(m_PickedColor));
         }
 
-        ImGui::ColorPicker3("Color", color);
         ImGui::End();  // Color
     }
 

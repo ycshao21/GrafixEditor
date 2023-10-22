@@ -133,8 +133,12 @@ namespace Grafix
             }
             ImGui::Separator();
             if (curve.Algorithm == CurveAlgorithmType::NURBS)
-                DrawIntControl("Order", &curve.Order, 2, curve.ControlPoints.size());
-            DrawFloatControl("Step", &curve.Step, 0.0005f, 0.03f, "%.4f", 0.0001f);
+            {
+                int minOrder = 2;
+                int maxOrder = std::max(3, (int)curve.ControlPoints.size() - 1);
+                DrawIntControl("Order", &curve.Order, minOrder, maxOrder);
+            }
+            DrawFloatControl("Step", &curve.Step, 0.0002f, 0.02f, "%.4f", 0.0001f);
             ImGui::Separator();
             DrawLineWidthAndStyleControl(&curve.LineWidth, curve.LineStyle);
             ImGui::Separator();
