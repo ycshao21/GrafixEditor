@@ -46,16 +46,14 @@ namespace Grafix
         void OnClipToolUpdate();
 
         void UI_MenuBar();
-        void UI_Viewport();
+        void UI_Canvas();
         void UI_Toolbar();
         void UI_Info();
         void UI_Color();
-
-        void BeginTransforming();
     private:
         uint32_t m_CanvasWidth = 1280, m_CanvasHeight = 720;
         glm::vec2 m_CanvasBounds[2];
-        bool m_ViewportFocused = false, m_ViewportHovered = false;
+        bool m_CanvasFocused = false, m_CanvasHovered = false;
 
         glm::vec2 m_MousePosInCanvas{ 0.0f, 0.0f };
         glm::vec2 m_MousePosInWorld{ 0.0f, 0.0f };
@@ -68,9 +66,8 @@ namespace Grafix
 
         ToolState m_ToolState = ToolState::Move;
         bool m_IsDrawing = false;
-        bool m_IsTransforming = false;
         int m_OperationState = 1;
-        int m_ControlPointSize = 10;
+        int m_ControlPointWidth = 10;
 
         glm::vec2* m_SelectedControlPoint = nullptr;
 

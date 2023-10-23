@@ -4,233 +4,11 @@
 
 namespace Grafix
 {
-    void HierarchyPanel::OnUIRender()
-    {
-        if (m_IsTransforming)
-            UI_Transformation();
-        else
-            UI_Properties();
+    // *****************************************************************************************************************************************************************
+    // Control Panel Templates
+    // *****************************************************************************************************************************************************************
 
-        UI_Hierarchy();
-    }
-
-    void HierarchyPanel::UI_Hierarchy()
-    {
-        ImGui::Begin("Hierarchy");
-        m_Scene->m_Registry.each([&](auto entityID) {
-            DrawItem(Entity{ entityID, m_Scene.get() });
-            }
-        );
-
-        // Left-click on blank space to unselect
-        if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            m_SelectedEntity = {};
-        // Press Delete to delete selected entity
-        if (m_SelectedEntity && ImGui::IsKeyPressed(ImGuiKey_Delete))
-            ImGui::OpenPopup("Warning");
-
-        m_IsModalOpen = ImGui::BeginPopupModal("Warning", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        if (m_IsModalOpen)
-        {
-            ImGui::Text("Delete this entity?");
-
-            if (ImGui::Button("OK", ImVec2(120, 0)))
-            {
-                m_Scene->RemoveEntity(m_SelectedEntity);
-                m_SelectedEntity = {};
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel", ImVec2(120, 0)))
-                ImGui::CloseCurrentPopup();
-
-            ImGui::EndPopup();
-        }
-        ImGui::End();
-    }
-
-    void HierarchyPanel::UI_Properties()
-    {
-        ImGui::Begin("Properties");
-        if (!m_SelectedEntity)
-        {
-            ImGui::End();
-            return;
-        }
-
-        ImGui::Text("Tag");
-        ImGui::SameLine();
-        auto& tag = m_SelectedEntity.GetComponent<TagComponent>().Tag;
-        m_TagBuffer = tag;
-
-        ImGui::InputText("##Tag", &m_TagBuffer);
-        if (!m_TagBuffer.empty())
-            tag = m_TagBuffer;
-
-        ImGui::Separator();
-
-        if (m_SelectedEntity.HasComponent<LineComponent>())
-        {
-            auto& line = m_SelectedEntity.GetComponent<LineComponent>();
-            std::vector<std::string> lineAlgorithmStrings = { "Midpoint", "Bresenham" };
-            DrawAlgorithmControl(lineAlgorithmStrings, line.Algorithm);
-            ImGui::Separator();
-            DrawFloat2Control("Point A", &line.P0.x, &line.P0.y);
-            DrawFloat2Control("Point B", &line.P1.x, &line.P1.y);
-            ImGui::Separator();
-            DrawLineWidthAndStyleControl(&line.LineWidth, line.LineStyle);
-            ImGui::Separator();
-            DrawColorControl(line.Color);
-        }
-        else if (m_SelectedEntity.HasComponent<CircleComponent>())
-        {
-            auto& circle = m_SelectedEntity.GetComponent<CircleComponent>();
-            DrawFloat2Control("Center", &circle.Center.x, &circle.Center.y);
-            DrawFloatControl("Radius", &circle.Radius, 0.0f);
-            ImGui::Separator();
-            DrawLineWidthAndStyleControl(&circle.LineWidth, circle.LineStyle);
-            ImGui::Separator();
-            DrawColorControl(circle.Color);
-        }
-        else if (m_SelectedEntity.HasComponent<ArcComponent>())
-        {
-            auto& arc = m_SelectedEntity.GetComponent<ArcComponent>();
-            DrawFloat2Control("Center", &arc.Center.x, &arc.Center.y);
-            DrawFloatControl("Radius", &arc.Radius, 0.0f);
-            DrawFloatControl("Angle 1", &arc.Angle1);
-            DrawFloatControl("Angle 2", &arc.Angle2);
-            ImGui::Checkbox("Major", &arc.Major);
-            ImGui::Separator();
-            DrawLineWidthAndStyleControl(&arc.LineWidth, arc.LineStyle);
-            ImGui::Separator();
-            DrawColorControl(arc.Color);
-        }
-        else if (m_SelectedEntity.HasComponent<PolygonComponent>())
-        {
-            auto& polygon = m_SelectedEntity.GetComponent<PolygonComponent>();
-            for (int i = 0; i < polygon.Vertices.size(); ++i)
-            {
-                ImGui::PushID(i);
-                std::string label = "Vertex " + std::to_string(i + 1);
-                DrawFloat2Control(label, &polygon.Vertices[i].x, &polygon.Vertices[i].y);
-                ImGui::PopID();
-            }
-            ImGui::Separator();
-            DrawColorControl(polygon.Color);
-        }
-        else if (m_SelectedEntity.HasComponent<CurveComponent>())
-        {
-            auto& curve = m_SelectedEntity.GetComponent<CurveComponent>();
-            std::vector<std::string> curveAlgorithmStrings = { "Bezier", "NURBS" };
-            DrawAlgorithmControl(curveAlgorithmStrings, curve.Algorithm);
-            ImGui::Separator();
-            for (int i = 0; i < curve.ControlPoints.size(); ++i)
-            {
-                ImGui::PushID(i);
-                std::string label = "Ctrl Point " + std::to_string(i + 1);
-                DrawFloat2Control(label, &curve.ControlPoints[i].x, &curve.ControlPoints[i].y);
-                ImGui::PopID();
-            }
-            ImGui::Separator();
-            if (curve.Algorithm == CurveAlgorithmType::NURBS)
-            {
-                int minOrder = 2;
-                int maxOrder = std::max(3, (int)curve.ControlPoints.size() - 1);
-                DrawIntControl("Order", &curve.Order, minOrder, maxOrder);
-            }
-            DrawFloatControl("Step", &curve.Step, 0.0002f, 0.02f, "%.4f", 0.0001f);
-            ImGui::Separator();
-            DrawLineWidthAndStyleControl(&curve.LineWidth, curve.LineStyle);
-            ImGui::Separator();
-            DrawColorControl(curve.Color);
-        }
-        ImGui::End();
-    }
-
-    void HierarchyPanel::UI_Transformation()
-    {
-        ImGui::Begin("Transformation");
-        auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
-        ImGui::Text("Transform");
-
-        DrawFloat2Control("Pivot Point", transform.Pivot);
-        DrawFloat2Control("Position", transform.Translation);
-        DrawFloatControl("Rotation", &transform.Rotation);
-
-        if (m_SelectedEntity.HasAnyOfComponents<CircleComponent, ArcComponent>())
-        {
-            DrawFloatControl("Scale", &transform.Scale.x, 0.0f);
-            transform.Scale.y = transform.Scale.x;
-        }
-        else
-        {
-            if (transform.KeepRatio)
-            {
-                DrawFloatControl("Scale", &transform.Scale.x, 0.0f);
-                transform.Scale.y = transform.Scale.x;
-            }
-            else
-            {
-                DrawFloat2Control("Scale", transform.Scale, 0.0f);
-            }
-
-            ImGui::SameLine();
-            ImGui::Checkbox("Keep Ratio", &transform.KeepRatio);
-        }
-
-        if (ImGui::Button("Apply"))
-        {
-            auto transformMatrix = m_SelectedEntity.GetComponent<TransformComponent>().GetTransformMatrix();
-
-            if (m_SelectedEntity.HasComponent<LineComponent>())
-            {
-                auto& line = m_SelectedEntity.GetComponent<LineComponent>();
-
-                line.P0 = Math::Transform(transformMatrix, line.P0);
-                line.P1 = Math::Transform(transformMatrix, line.P1);
-            }
-            else if (m_SelectedEntity.HasComponent<CircleComponent>())
-            {
-                auto& circle = m_SelectedEntity.GetComponent<CircleComponent>();
-
-                circle.Center = Math::Transform(transformMatrix, circle.Center);
-                circle.Radius = circle.Radius * transform.Scale.x;
-            }
-            else if (m_SelectedEntity.HasComponent<PolygonComponent>())
-            {
-                auto& polygon = m_SelectedEntity.GetComponent<PolygonComponent>();
-
-                for (glm::vec2& vertex : polygon.Vertices)
-                    vertex = Math::Transform(transformMatrix, vertex);
-            }
-
-            transform = TransformComponent();
-            m_IsTransforming = false;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Cancel"))
-        {
-            transform = TransformComponent();
-            m_IsTransforming = false;
-        }
-
-        ImGui::End();
-    }
-
-    void HierarchyPanel::DrawItem(Entity entity)
-    {
-        ImGui::Selectable(entity.GetTag().c_str(), m_SelectedEntity == entity);
-        if (ImGui::IsItemClicked())
-            m_SelectedEntity = entity;
-    }
-
-    // *********************************************************************
-    // *                      Control Panel Templates                      *
-    // *********************************************************************
-
-    void HierarchyPanel::DrawFloatControl(const std::string& label, float* value, float vMin, float vMax, const char* format, float speed, float columnWidth)
+    static void DrawFloatControl(const std::string& label, float* value, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f)
     {
         ImGui::PushID(label.c_str());
 
@@ -247,7 +25,7 @@ namespace Grafix
         ImGui::PopID();
     }
 
-    void HierarchyPanel::DrawFloat2Control(const std::string& label, float* x, float* y, float vMin, float vMax, const char* format, float speed, float columnWidth)
+    static  void DrawFloat2Control(const std::string& label, float* x, float* y, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f)
     {
         ImGui::PushID(label.c_str());
 
@@ -275,12 +53,12 @@ namespace Grafix
         ImGui::PopID();
     }
 
-    void HierarchyPanel::DrawFloat2Control(const std::string& label, glm::vec2& values, float vMin, float vMax, const char* format, float speed, float columnWidth)
+    static void DrawFloat2Control(const std::string& label, glm::vec2& values, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f)
     {
         DrawFloat2Control(label, &values.x, &values.y, vMin, vMax, format, speed, columnWidth);
     }
 
-    void HierarchyPanel::DrawFloat3Control(const std::string& label, float* x, float* y, float* z, float vMin, float vMax, const char* format, float speed, float columnWidth)
+    static  void DrawFloat3Control(const std::string& label, float* x, float* y, float* z, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f)
     {
         ImGui::PushID(label.c_str());
         ImGui::Columns(2);
@@ -312,12 +90,12 @@ namespace Grafix
         ImGui::PopID();
     }
 
-    void HierarchyPanel::DrawFloat3Control(const std::string& label, glm::vec3& values, float vMin, float vMax, const char* format, float speed, float columnWidth)
+    static  void DrawFloat3Control(const std::string& label, glm::vec3& values, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f)
     {
         DrawFloat3Control(label, &values.x, &values.y, &values.z, vMin, vMax, format, speed, columnWidth);
     }
 
-    void HierarchyPanel::DrawIntControl(const std::string& label, int* value, int vMin, int vMax, float columnWidth)
+    static  void DrawIntControl(const std::string& label, int* value, int vMin = -INT_MIN, int vMax = INT_MAX, float columnWidth = 100.0f)
     {
         ImGui::PushID(label.c_str());
         ImGui::Columns(2);
@@ -331,11 +109,355 @@ namespace Grafix
         ImGui::PopID();
     }
 
-    void HierarchyPanel::DrawColorControl(glm::vec3& color)
+    static void DrawColorControl(glm::vec3& color)
     {
         ImGui::Text("Color");
         ImGui::SameLine();
         ImGui::ColorEdit3("##Color", glm::value_ptr(color));
+    }
+
+    // *****************************************************************************************************************************************************************
+    // Hierarchy Panel
+    // *****************************************************************************************************************************************************************
+
+    void HierarchyPanel::SwitchSelectedEntity(Entity entity)
+    {
+        m_SelectedEntities.clear();
+
+        if (entity)
+            m_SelectedEntities.emplace(entity);
+    }
+
+    void HierarchyPanel::ToggleSelectedEntity(Entity entity)
+    {
+        if (!entity)
+        {
+            m_SelectedEntities.clear();
+            return;
+        }
+
+        if (IsSelected(entity))
+            m_SelectedEntities.erase(entity);
+        else
+            m_SelectedEntities.emplace(entity);
+    }
+
+    void HierarchyPanel::OnUpdate()
+    {
+        if (m_IsTransforming)
+        {
+            for (auto entity : m_SelectedEntities)
+            {
+                auto& transform = entity.GetComponent<TransformComponent>();
+                transform = m_TransformComponent;
+            }
+        }
+    }
+
+    void HierarchyPanel::BeginTransformation()
+    {
+        if (m_SelectedEntities.empty())
+            return;
+
+        m_IsTransforming = true;
+        m_MustKeepRatio = false;
+        m_TransformComponent = {};
+
+        for (auto entity : m_SelectedEntities)
+        {
+            if (entity.HasComponent<LineComponent>())
+            {
+                auto& line = entity.GetComponent<LineComponent>();
+                m_TransformComponent.Pivot += line.GetCenterOfGravity();
+            }
+            else if (entity.HasComponent<CircleComponent>())
+            {
+                auto& circle = entity.GetComponent<CircleComponent>();
+                m_TransformComponent.Pivot += circle.GetCenterOfGravity();
+                m_MustKeepRatio = true;
+            }
+            else if (entity.HasComponent<ArcComponent>())
+            {
+                auto& arc = entity.GetComponent<ArcComponent>();
+                m_TransformComponent.Pivot += arc.GetCenterOfGravity();
+                m_MustKeepRatio = true;
+            }
+            else if (entity.HasComponent<PolygonComponent>())
+            {
+                auto& polygon = entity.GetComponent<PolygonComponent>();
+                m_TransformComponent.Pivot += polygon.GetCenterOfGravity();
+            }
+            else if (entity.HasComponent<CurveComponent>())
+            {
+                auto& curve = entity.GetComponent<CurveComponent>();
+                m_TransformComponent.Pivot += curve.GetCenterOfGravity();
+            }
+        }
+
+        m_TransformComponent.Pivot /= (float)m_SelectedEntities.size();
+    }
+
+    void HierarchyPanel::EndTransformation(bool apply)
+    {
+        auto transformMatrix = m_TransformComponent.GetTransformMatrix();
+        for (auto selectedEntity : m_SelectedEntities)
+        {
+            if (apply)
+            {
+                if (selectedEntity.HasComponent<LineComponent>())
+                {
+                    auto& line = selectedEntity.GetComponent<LineComponent>();
+                    line.P0 = Math::Transform(transformMatrix, line.P0);
+                    line.P1 = Math::Transform(transformMatrix, line.P1);
+                }
+                else if (selectedEntity.HasComponent<CircleComponent>())
+                {
+                    auto& circle = selectedEntity.GetComponent<CircleComponent>();
+                    circle.Center = Math::Transform(transformMatrix, circle.Center);
+                    circle.Radius = circle.Radius * m_TransformComponent.Scale.x;
+                }
+                else if (selectedEntity.HasComponent<ArcComponent>())
+                {
+                    auto& arc = selectedEntity.GetComponent<ArcComponent>();
+
+                    glm::vec2 newCenter = Math::Transform(transformMatrix, arc.Center);
+
+                    float radiansAngle1 = glm::radians(arc.Angle1);
+                    float radiansAngle2 = glm::radians(arc.Angle2);
+                    glm::vec2 delta1 = arc.Radius * glm::vec2{ glm::cos(radiansAngle1), glm::sin(radiansAngle1) };
+                    glm::vec2 delta2 = arc.Radius * glm::vec2{ glm::cos(radiansAngle2), glm::sin(radiansAngle2) };
+                    delta1 = Math::Transform(transformMatrix, delta1 + arc.Center) - newCenter;
+                    delta2 = Math::Transform(transformMatrix, delta2 + arc.Center) - newCenter;
+
+                    arc.Center = newCenter;
+                    arc.Radius = arc.Radius * m_TransformComponent.Scale.x;
+                    arc.Angle1 = glm::degrees(glm::atan(delta1.y, delta1.x));
+                    arc.Angle2 = glm::degrees(glm::atan(delta2.y, delta2.x));
+                }
+                else if (selectedEntity.HasComponent<PolygonComponent>())
+                {
+                    auto& polygon = selectedEntity.GetComponent<PolygonComponent>();
+                    polygon.Vertices = Math::Transform(transformMatrix, polygon.Vertices);
+                }
+                else if (selectedEntity.HasComponent<CurveComponent>())
+                {
+                    auto& curve = selectedEntity.GetComponent<CurveComponent>();
+                    curve.ControlPoints = Math::Transform(transformMatrix, curve.ControlPoints);
+                }
+            }
+
+            auto& transform = selectedEntity.GetComponent<TransformComponent>();
+            transform = {};
+        }
+        m_TransformComponent = {};
+        m_IsTransforming = false;
+        m_SelectedEntities.clear();
+    }
+
+    glm::vec2 HierarchyPanel::GetPivot() const
+    {
+        return Math::Transform(m_TransformComponent.GetTransformMatrix(), m_TransformComponent.Pivot);
+    }
+
+    void HierarchyPanel::OnUIRender()
+    {
+        if (m_IsTransforming)
+            UI_Transformation();
+        else
+            UI_Properties();
+
+        UI_Hierarchy();
+    }
+
+    // *****************************************************************************************************************************************************************
+    // UI Functions
+    // *****************************************************************************************************************************************************************
+
+    void HierarchyPanel::UI_Hierarchy()
+    {
+        ImGui::Begin("Hierarchy");
+        m_Scene->m_Registry.each([&](auto entityID) {
+            DrawItem(Entity{ entityID, m_Scene.get() });
+            }
+        );
+
+        // Left-click on blank space to unselect
+        if (!m_IsTransforming)
+        {
+            if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                m_SelectedEntities.clear();
+            // Press Delete to delete selected entity
+            if (!m_SelectedEntities.empty() && ImGui::IsKeyPressed(ImGuiKey_Delete))
+                ImGui::OpenPopup("Warning");
+
+            m_IsModalOpen = ImGui::BeginPopupModal("Warning", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            if (m_IsModalOpen)
+            {
+                ImGui::Text("Delete this entity?");
+
+                if (ImGui::Button("OK", ImVec2(120, 0)))
+                {
+                    for (auto entity : m_SelectedEntities)
+                        m_Scene->RemoveEntity(entity);
+                    m_SelectedEntities.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                    ImGui::CloseCurrentPopup();
+
+                ImGui::EndPopup();
+            }
+        }
+        ImGui::End();
+    }
+
+    void HierarchyPanel::UI_Properties()
+    {
+        ImGui::Begin("Properties");
+        if (m_SelectedEntities.size() != 1)
+        {
+            ImGui::End();
+            return;
+        }
+
+        // The following controls are only available when a single entity is selected
+        auto selectedEntity = *m_SelectedEntities.begin();
+
+        ImGui::Text("Tag");
+        ImGui::SameLine();
+        auto& tag = selectedEntity.GetComponent<TagComponent>().Tag;
+        m_TagBuffer = tag;
+
+        ImGui::InputText("##Tag", &m_TagBuffer);
+        if (!m_TagBuffer.empty())
+            tag = m_TagBuffer;
+
+        ImGui::Separator();
+
+        if (selectedEntity.HasComponent<LineComponent>())
+        {
+            auto& line = selectedEntity.GetComponent<LineComponent>();
+            std::vector<std::string> lineAlgorithmStrings = { "Midpoint", "Bresenham" };
+            DrawAlgorithmControl(lineAlgorithmStrings, line.Algorithm);
+            ImGui::Separator();
+            DrawFloat2Control("Point A", &line.P0.x, &line.P0.y);
+            DrawFloat2Control("Point B", &line.P1.x, &line.P1.y);
+            ImGui::Separator();
+            DrawLineWidthAndStyleControl(&line.LineWidth, line.LineStyle);
+            ImGui::Separator();
+            DrawColorControl(line.Color);
+        }
+        else if (selectedEntity.HasComponent<CircleComponent>())
+        {
+            auto& circle = selectedEntity.GetComponent<CircleComponent>();
+            DrawFloat2Control("Center", &circle.Center.x, &circle.Center.y);
+            DrawFloatControl("Radius", &circle.Radius, 0.0f);
+            ImGui::Separator();
+            DrawLineWidthAndStyleControl(&circle.LineWidth, circle.LineStyle);
+            ImGui::Separator();
+            DrawColorControl(circle.Color);
+        }
+        else if (selectedEntity.HasComponent<ArcComponent>())
+        {
+            auto& arc = selectedEntity.GetComponent<ArcComponent>();
+            DrawFloat2Control("Center", &arc.Center.x, &arc.Center.y);
+            DrawFloatControl("Radius", &arc.Radius, 0.0f);
+            DrawFloatControl("Angle 1", &arc.Angle1);
+            DrawFloatControl("Angle 2", &arc.Angle2);
+            ImGui::Checkbox("Major", &arc.Major);
+            ImGui::Separator();
+            DrawLineWidthAndStyleControl(&arc.LineWidth, arc.LineStyle);
+            ImGui::Separator();
+            DrawColorControl(arc.Color);
+        }
+        else if (selectedEntity.HasComponent<PolygonComponent>())
+        {
+            auto& polygon = selectedEntity.GetComponent<PolygonComponent>();
+            for (int i = 0; i < polygon.Vertices.size(); ++i)
+            {
+                ImGui::PushID(i);
+                std::string label = "Vertex " + std::to_string(i + 1);
+                DrawFloat2Control(label, &polygon.Vertices[i].x, &polygon.Vertices[i].y);
+                ImGui::PopID();
+            }
+            ImGui::Separator();
+            DrawColorControl(polygon.Color);
+        }
+        else if (selectedEntity.HasComponent<CurveComponent>())
+        {
+            auto& curve = selectedEntity.GetComponent<CurveComponent>();
+            std::vector<std::string> curveAlgorithmStrings = { "Bezier", "NURBS" };
+            DrawAlgorithmControl(curveAlgorithmStrings, curve.Algorithm);
+            ImGui::Separator();
+            for (int i = 0; i < curve.ControlPoints.size(); ++i)
+            {
+                ImGui::PushID(i);
+                std::string label = "Ctrl Point " + std::to_string(i + 1);
+                DrawFloat2Control(label, &curve.ControlPoints[i].x, &curve.ControlPoints[i].y);
+                ImGui::PopID();
+            }
+            ImGui::Separator();
+            if (curve.Algorithm == CurveAlgorithmType::NURBS)
+            {
+                int minOrder = 2;
+                int maxOrder = std::max(3, (int)curve.ControlPoints.size() - 1);
+                DrawIntControl("Order", &curve.Order, minOrder, maxOrder);
+            }
+            DrawFloatControl("Step", &curve.Step, 0.0002f, 0.02f, "%.4f", 0.0001f);
+            ImGui::Separator();
+            DrawLineWidthAndStyleControl(&curve.LineWidth, curve.LineStyle);
+            ImGui::Separator();
+            DrawColorControl(curve.Color);
+        }
+        ImGui::End();
+    }
+
+    void HierarchyPanel::UI_Transformation()
+    {
+        ImGui::Begin("Transformation");
+
+        glm::vec2 pivot = GetPivot();
+        ImGui::Text("Pivot: (%.3f, %.3f)", pivot.x, pivot.y);
+
+        DrawFloat2Control("Position", m_TransformComponent.Translation);
+        DrawFloatControl("Rotation", &m_TransformComponent.Rotation);
+
+        if (m_TransformComponent.KeepRatio)
+        {
+            DrawFloatControl("Scale", &m_TransformComponent.Scale.x, 0.0f);
+            m_TransformComponent.Scale.y = m_TransformComponent.Scale.x;
+        }
+        else
+        {
+            DrawFloat2Control("Scale", m_TransformComponent.Scale, 0.0f);
+        }
+
+        if (!m_MustKeepRatio)
+        {
+            ImGui::SameLine();
+            ImGui::Checkbox("Keep Ratio", &m_TransformComponent.KeepRatio);
+        }
+
+        if (ImGui::Button("Apply"))
+            EndTransformation(true);
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+            EndTransformation(false);
+
+        ImGui::End();
+    }
+
+    void HierarchyPanel::DrawItem(Entity entity)
+    {
+        ImGui::Selectable(entity.GetTag().c_str(), IsSelected(entity));
+        if (ImGui::IsItemClicked())
+        {
+            if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl))
+                ToggleSelectedEntity(entity);
+            else
+                SwitchSelectedEntity(entity);
+        }
     }
 
     void HierarchyPanel::DrawLineWidthAndStyleControl(float* lineWidth, LineStyleType& lineStyle)

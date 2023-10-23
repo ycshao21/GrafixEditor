@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "ImGuiLayer.h"
+#include "backends/imgui_impl_vulkan.cpp"
+#include "backends/imgui_impl_glfw.cpp"
 
 #include "Grafix/Core/Application.h"
 

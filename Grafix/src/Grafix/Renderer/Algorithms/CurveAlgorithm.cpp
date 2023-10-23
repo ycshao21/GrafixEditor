@@ -45,18 +45,6 @@ namespace Grafix
 
         uint32_t colorValue = RGBToUint32(color);
 
-        GF_INFO("order: {0}", order);
-        std::cout << "Knots:";
-        for (int i = 0; i < knots.size(); ++i)
-            std::cout << " " << knots[i];
-
-        std::cout << std::endl;
-
-        std::cout << "Weights:";
-        for (int i = 0; i < weights.size(); ++i)
-            std::cout << " " << weights[i];
-        std::cout << std::endl;
-
         // Update knots and weights
         if (knots.size() != controlPoints.size() + order)
             GenerateKnots(knots, controlPoints.size(), order);

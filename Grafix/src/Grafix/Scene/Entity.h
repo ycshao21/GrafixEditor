@@ -63,6 +63,7 @@ namespace Grafix
 
         bool operator==(const Entity& rhs) const { return m_Handle == rhs.m_Handle && m_Scene == rhs.m_Scene; }
         bool operator!=(const Entity& rhs) const { return !(*this == rhs); }
+        bool operator<(const Entity& rhs) const { return (uint32_t)m_Handle < (uint32_t)rhs.m_Handle; }
     protected:
         entt::entity m_Handle = entt::null;
         Scene* m_Scene = nullptr;

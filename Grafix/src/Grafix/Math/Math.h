@@ -75,5 +75,13 @@ namespace Grafix
         {
             return glm::vec2(matrix * glm::vec3(point, 1.0f));
         }
+
+        inline std::vector<glm::vec2> Transform(const glm::mat3& matrix, const std::vector<glm::vec2>& points)
+        {
+            std::vector<glm::vec2> transformedPoints(points);
+            for (auto& point : transformedPoints)
+                point = Transform(matrix, point);
+            return transformedPoints;
+        }
     }
 }

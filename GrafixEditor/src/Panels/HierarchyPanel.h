@@ -1,6 +1,19 @@
 #pragma once
-
 #include "Grafix.h"
+
+namespace std
+{
+    template<typename T> struct hash;
+
+    template<>
+    struct hash<Grafix::Entity>
+    {
+        std::size_t operator()(Grafix::Entity entity) const
+        {
+            return (uint32_t)(entt::entity)entity;
+        }
+    };
+}
 
 namespace Grafix
 {
@@ -12,18 +25,27 @@ namespace Grafix
 
         void BindScene(const std::shared_ptr<Scene>& scene) { m_Scene = scene; }
 
-        Entity GetSelectedEntity() const { return m_SelectedEntity; }
-        void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
+        void SwitchSelectedEntity(Entity entity);
+        void ToggleSelectedEntity(Entity entity);
+        inline bool HasSelectedEntity() const { return !m_SelectedEntities.empty(); }
+        inline int GetNumOfSelectedEntities() const { return m_SelectedEntities.size(); }
+        std::set<Entity>& GetSelectedEntities() { return m_SelectedEntities; }
 
-        void SetTransforming() { m_IsTransforming = true; }
-        bool IsTransforming() const { return m_IsTransforming; }
+        void OnUpdate();
+
+        // Transformation
+        inline bool IsTransforming() const { return m_IsTransforming; }
+        void BeginTransformation();
+        void EndTransformation(bool apply);
+        glm::vec2 GetPivot() const;
 
         bool IsModalOpen() const { return m_IsModalOpen; }
 
         void OnUIRender();
     private:
+        inline bool IsSelected(Entity entity) const { return m_SelectedEntities.find(entity) != m_SelectedEntities.end(); }
+
         void DrawItem(Entity entity);
-        void DrawColorControl(glm::vec3& values);
         void DrawLineWidthAndStyleControl(float* width, LineStyleType& lineStyle);
         void DrawAlgorithmControl(const std::vector<std::string>& algorithmStrings, auto& lineAlgorithm);
 
@@ -31,21 +53,16 @@ namespace Grafix
         void UI_Properties();
         void UI_Transformation();
     private:
-        void DrawFloatControl(const std::string& label, float* value, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f);
-
-        void DrawFloat2Control(const std::string& label, glm::vec2& values, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f);
-        void DrawFloat2Control(const std::string& label, float* x, float* y, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f);
-
-        void DrawFloat3Control(const std::string& label, glm::vec3& values, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f);
-        void DrawFloat3Control(const std::string& label, float* x, float* y, float* z, float vMin = -FLT_MAX, float vMax = FLT_MAX, const char* format = "%.3f", float speed = 0.5f, float columnWidth = 100.0f);
-
-        void DrawIntControl(const std::string& label, int* value, int vMin = -INT_MIN, int vMax = INT_MAX, float columnWidth = 100.0f);
-    private:
-        Entity m_SelectedEntity{};
+        std::set<Entity> m_SelectedEntities{};
         std::shared_ptr<Scene> m_Scene = nullptr;
 
         bool m_IsTransforming = false;
+        bool m_MustKeepRatio = false;
+
         bool m_IsModalOpen = false;
         std::string m_TagBuffer;
+
+        TransformComponent m_TransformComponent{};
+        FillComponent m_FillComponent{};
     };
 }
