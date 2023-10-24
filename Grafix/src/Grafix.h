@@ -14,7 +14,7 @@
 
 #include "Grafix/Renderer/Renderer.h"
 #include "Grafix/Renderer/Camera.h"
-
+#include "Grafix/Renderer/Camera3D.h"
 #include "Grafix/Scene/Scene.h"
 #include "Grafix/Scene/Entity.h"
 #include "Grafix/Scene/Components.h"
