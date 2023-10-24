@@ -410,6 +410,21 @@ namespace Grafix
             ImGui::Separator();
             DrawColorControl(curve.Color);
         }
+        else if (selectedEntity.HasComponent<SphereComponent>())
+        {
+            auto& sphere = selectedEntity.GetComponent<SphereComponent>();
+            ImGui::Text("Control Environment Light");
+            ImGui::DragFloat3("envir", glm::value_ptr(sphere.EnvirDirection), 0.01f, -1.0f, 1.0f);
+            
+            ImGui::Text("Algorithm");
+            ImGui::Checkbox("Lambert(n) or Phong(y)", &sphere.Flag);
+            if (sphere.Flag)
+            {
+                ImGui::Text("p");
+                ImGui::DragFloat("p", &sphere.P, 1.0f, 4.0f, 64.0f);
+            }
+
+        }
         ImGui::End();
     }
 

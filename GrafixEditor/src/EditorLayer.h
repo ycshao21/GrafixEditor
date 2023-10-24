@@ -15,6 +15,7 @@ namespace Grafix
             Clip, Fill,
             Polygon,
             Curve,
+            Sphere
         };
 
     public:
@@ -41,7 +42,7 @@ namespace Grafix
         void OnArcToolUpdate();
         void OnCircleToolUpdate();
         void OnCurveUpdate();
-
+        void OnSphereUpdate(){}
         // NEW
         void OnClipToolUpdate();
 
@@ -62,6 +63,8 @@ namespace Grafix
 
         Renderer m_Renderer;
         Camera m_Camera;
+        Camera3D m_Camera3D;
+
         std::shared_ptr<Scene> m_EditorScene = nullptr;
 
         ToolState m_ToolState = ToolState::Move;

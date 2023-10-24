@@ -6,9 +6,12 @@
 #include "Grafix/Scene/Entity.h"
 
 #include "Camera.h"
+#include "Camera3D.h"
 #include "Algorithms/LineAlgorithm.h"
 
 #include <memory>
+
+#include "Ray.h"
 
 namespace Grafix
 {
@@ -113,6 +116,10 @@ namespace Grafix
 
         // NEW
         ////void SetClipRange(const glm::vec2 p0, const glm::vec2 p1);
+
+        void SphereRender(const Camera3D& camera, glm::vec3 envir, bool flag=false, float p=4.0f);
+        glm::vec4 TraceRay(Ray ray, glm::vec3 Envir, bool flag,float p);
+
     private:
         std::shared_ptr<Image> m_Image = nullptr;
         uint32_t* m_Pixels = nullptr;
