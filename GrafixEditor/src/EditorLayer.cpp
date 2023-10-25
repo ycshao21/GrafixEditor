@@ -338,6 +338,9 @@ namespace Grafix
             return;
         }
 
+        if (m_HierarchyPanel.IsTransforming())
+            return;
+
         if (m_CanvasHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))  // Check if the mouse is clicked near a control point
         {
             if (m_HierarchyPanel.GetNumOfSelectedEntities() == 1)
