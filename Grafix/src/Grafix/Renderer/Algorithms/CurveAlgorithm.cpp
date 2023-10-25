@@ -45,17 +45,18 @@ namespace Grafix
 
         uint32_t colorValue = RGBToUint32(color);
 
+        int controlPointSize = controlPoints.size();
         // Update knots and weights
-        if (knots.size() != controlPoints.size() + order)
-            GenerateKnots(knots, controlPoints.size(), order);
+        if (knots.size() != controlPointSize + order)
+            GenerateKnots(knots, controlPointSize, order);
 
-        if (weights.size() != controlPoints.size())
-            GenerateWeights(weights, controlPoints.size());
+        if (weights.size() != controlPointSize)
+            GenerateWeights(weights, controlPointSize);
 
         for (float u = 0.0f; u <= 1.0f; u += step)
         {
             glm::vec2 point{ 0.0f, 0.0f };
-            for (int i = 0; i < controlPoints.size(); i++)
+            for (int i = 0; i < controlPointSize; i++)
                 point += controlPoints[i] * BaseFunction(i, order, u, knots);
 
             SetPoint(Math::Round(point.x), Math::Round(point.y), colorValue);

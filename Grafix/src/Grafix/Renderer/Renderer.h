@@ -27,6 +27,9 @@ namespace Grafix
         void SetClearColor(const glm::vec3& color) { m_ClearColor = color; }
         int ReadPixel(glm::vec2 pos) const;
 
+        void Fill(glm::vec2 point, const glm::vec3& color);
+        void SphereRender(const Camera3D& camera, glm::vec3 envir, bool flag = false, float p = 4.0f, int id = -1);
+
         // *******************************************************************************************************************************************************************
         // Line
         // *******************************************************************************************************************************************************************
@@ -105,21 +108,25 @@ namespace Grafix
             float lineWidth = 1.0f, LineStyleType lineStyle = LineStyleType::Solid, CurveAlgorithmType algorithm = CurveAlgorithmType::Bezier, int id = -1);
 
         // *******************************************************************************************************************************************************************
-        // Others (not reliant on any transformation)
+        // Others
         // *******************************************************************************************************************************************************************
         void DrawSquare(glm::vec2 center, float length, const glm::vec3& color, int id = -1);
 
-        void DrawCross(glm::vec2 center, float radius, const glm::vec3& color, int id = -1);
+        inline void DrawCross(glm::vec2 center, float radius, const glm::vec3& color, int id = -1)
+        {
+            DrawCross(TransformComponent(), center, radius, color, id);
+        }
+
         void DrawCross(const TransformComponent& transform, glm::vec2 center, float radius, const glm::vec3& color, int id = -1);
 
-        void Fill(glm::vec2 seedPoint, const glm::vec3& fillColor);
+        inline void DrawRect(glm::vec2 leftBottom, glm::vec2 rightTop, const glm::vec3& color, int id = -1)
+        {
+            DrawRect(TransformComponent(), leftBottom, rightTop, color, id);
+        }
 
-        // NEW
-        ////void SetClipRange(const glm::vec2 p0, const glm::vec2 p1);
-
-        void SphereRender(const Camera3D& camera, glm::vec3 envir, bool flag=false, float p=4.0f);
-        glm::vec4 TraceRay(Ray ray, glm::vec3 Envir, bool flag,float p);
-
+        void DrawRect(const TransformComponent& transform, glm::vec2 leftBottom, glm::vec2 rightTop, const glm::vec3& color, int id = -1);
+    private:
+        glm::vec3 TraceRay(Ray ray, const glm::vec3& envir, bool flag, float p);
     private:
         std::shared_ptr<Image> m_Image = nullptr;
         uint32_t* m_Pixels = nullptr;
@@ -129,6 +136,6 @@ namespace Grafix
         glm::vec2 m_ClipP1 = { 1280, 720 };
         glm::vec3 m_ClearColor = { 0.158f, 0.191f, 0.214f };
 
-        friend class GraphicsAlgorithm;
+        std::vector<uint32_t> m_HorizontalIterators, m_VerticalIterators;
     };
 }

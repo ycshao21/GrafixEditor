@@ -4,7 +4,7 @@
 
 namespace Grafix
 {
-    class CurveAlgorithm : public GraphicsAlgorithm
+    class CurveAlgorithm final : public GraphicsAlgorithm
     {
     public:
         static void Bezier(const std::vector<glm::vec2>& point, float step, const glm::vec3& color);

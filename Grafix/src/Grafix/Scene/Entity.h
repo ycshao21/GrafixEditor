@@ -24,6 +24,12 @@ namespace Grafix
             return m_Scene->m_Registry.emplace<Component>(m_Handle, std::forward<Args>(args)...);
         }
 
+        template<typename Component, typename... Args>
+        Component& AddOrReplaceComponent(Args&&... args)
+        {
+            return m_Scene->m_Registry.emplace_or_replace<Component>(m_Handle, std::forward<Args>(args)...);
+        }
+
         template<typename Component>
         void RemoveComponent()
         {

@@ -4,7 +4,7 @@
 
 namespace Grafix
 {
-    class LineAlgorithm : public GraphicsAlgorithm
+    class LineAlgorithm final : public GraphicsAlgorithm
     {
     public:
         static void Midpoint(glm::vec2 p0, glm::vec2 p1, const glm::vec3& color);

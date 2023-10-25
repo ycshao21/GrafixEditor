@@ -13,11 +13,11 @@ namespace Grafix
     static const int BOTTOM = 4;
     static const int TOP = 8;
 
-    std::vector<glm::vec2> ClippingAlgorithm::CohenSutherland(glm::vec2 beginPoint, glm::vec2 endPoint, glm::vec2 leftBottom, glm::vec2 rightTop)
+    std::vector<glm::vec2> ClippingAlgorithm::CohenSutherland(glm::vec2 lineP0, glm::vec2 lineP1, glm::vec2 bottomLeft, glm::vec2 topRight)
     {
         int code = 0;
-        int code1 = Encode(beginPoint, leftBottom, rightTop);
-        int code2 = Encode(endPoint, leftBottom, rightTop);
+        int code1 = Encode(lineP0, bottomLeft, topRight);
+        int code2 = Encode(lineP1, bottomLeft, topRight);
 
         int x = 0, y = 0;
 
@@ -30,65 +30,63 @@ namespace Grafix
 
             if ((code & LEFT) != 0)
             {
-                x = leftBottom.x;
-                y = beginPoint.y + (endPoint.y - beginPoint.y) * (x - beginPoint.x) / (endPoint.x - beginPoint.x);
+                x = bottomLeft.x;
+                y = lineP0.y + (lineP1.y - lineP0.y) * (x - lineP0.x) / (lineP1.x - lineP0.x);
             }
             else if ((code & RIGHT) != 0)
             {
-                x = rightTop.x;
-                y = beginPoint.y + (endPoint.y - beginPoint.y) * (x - beginPoint.x) / (endPoint.x - beginPoint.x);
+                x = topRight.x;
+                y = lineP0.y + (lineP1.y - lineP0.y) * (x - lineP0.x) / (lineP1.x - lineP0.x);
             }
             else if ((code & BOTTOM) != 0)
             {
-                y = leftBottom.y;
-                x = beginPoint.x + (endPoint.x - beginPoint.x) * (y - beginPoint.y) / (endPoint.y - beginPoint.y);
+                y = bottomLeft.y;
+                x = lineP0.x + (lineP1.x - lineP0.x) * (y - lineP0.y) / (lineP1.y - lineP0.y);
             }
             else if ((code & TOP) != 0)
             {
-                y = rightTop.y;
-                x = beginPoint.x + (endPoint.x - beginPoint.x) * (y - beginPoint.y) / (endPoint.y - beginPoint.y);
+                y = topRight.y;
+                x = lineP0.x + (lineP1.x - lineP0.x) * (y - lineP0.y) / (lineP1.y - lineP0.y);
             }
 
             if (code == code1)
             {
-                beginPoint.x = x;
-                beginPoint.y = y;
-                code1 = Encode(beginPoint, leftBottom, rightTop);
+                lineP0.x = x;
+                lineP0.y = y;
+                code1 = Encode(lineP0, bottomLeft, topRight);
             }
             else
             {
-                endPoint.x = x;
-                endPoint.y = y;
-                code2 = Encode(endPoint, leftBottom, rightTop);
+                lineP1.x = x;
+                lineP1.y = y;
+                code2 = Encode(lineP1, bottomLeft, topRight);
             }
         }
-        return { beginPoint, endPoint };
+        return { lineP0, lineP1 };
     }
 
-    std::vector<glm::vec2> ClippingAlgorithm::MidPoint(glm::vec2 beginPoint, glm::vec2 endPoint, glm::vec2 leftBottom, glm::vec2 rightTop)
+    std::vector<glm::vec2> ClippingAlgorithm::Midpoint(glm::vec2 lineP0, glm::vec2 lineP1, glm::vec2 bottomLeft, glm::vec2 topRight)
     {
-        std::vector<glm::vec2> result;
-
-        int code1 = Encode(beginPoint, leftBottom, rightTop);
-        int code2 = Encode(endPoint, leftBottom, rightTop);
+        int code1 = Encode(lineP0, bottomLeft, topRight);
+        int code2 = Encode(lineP1, bottomLeft, topRight);
         int code = 0, x = 0, y = 0;
         float epsilon = 0.1f;
 
         if (code1 == 0 && code2 == 0)
-            return { beginPoint, endPoint };
+            return { lineP0, lineP1 };
 
         if ((code1 & code2) != 0)
             return { { -1.0f, -1.0f }, { -1.0f, -1.0f } };
 
         if (code1 != 0)
         {
-            glm::vec2 begin = beginPoint;
-            glm::vec2 end = endPoint;
+            glm::vec2 begin = lineP0;
+            glm::vec2 end = lineP1;
 
             while (glm::distance(begin, end) >= epsilon)
             {
                 glm::vec2 mid = (begin + end) / 2.0f;
-                code = Encode(mid, leftBottom, rightTop);
+                code = Encode(mid, bottomLeft, topRight);
                 if ((code & code1) == 0)
                 {
                     end = mid;
@@ -99,18 +97,18 @@ namespace Grafix
                     code1 = code;
                 }
             }
-            beginPoint = begin;
+            lineP0 = begin;
         }
 
         if (code2 != 0)
         {
-            glm::vec2 begin = beginPoint;
-            glm::vec2 end = endPoint;
+            glm::vec2 begin = lineP0;
+            glm::vec2 end = lineP1;
 
             while (glm::distance(begin, end) >= epsilon)
             {
                 glm::vec2 mid = glm::vec2({ (begin[0] + end[0]) / 2, (begin[1] + end[1]) / 2 });
-                code = Encode(mid, leftBottom, rightTop);
+                code = Encode(mid, bottomLeft, topRight);
                 if ((code & code2) == 0)
                     begin = mid;
                 else
@@ -119,23 +117,23 @@ namespace Grafix
                     code2 = code;
                 }
             }
-            endPoint = end;
+            lineP1 = end;
         }
 
-        return { beginPoint, endPoint };
+        return { lineP0, lineP1 };
     }
 
-    int ClippingAlgorithm::Encode(glm::vec2 point, glm::vec2 leftBottom, glm::vec2 rightTop)
+    int ClippingAlgorithm::Encode(glm::vec2 point, glm::vec2 bottomLeft, glm::vec2 topRight)
     {
         int code = 0;
 
-        if (point.x < leftBottom.x)
+        if (point.x < bottomLeft.x)
             code |= LEFT;
-        else if (point.x > rightTop.x)
+        else if (point.x > topRight.x)
             code |= RIGHT;
-        if (point.y < leftBottom.y)
+        if (point.y < bottomLeft.y)
             code |= BOTTOM;
-        else if (point.y > rightTop.y)
+        else if (point.y > topRight.y)
             code |= TOP;
 
         return code;

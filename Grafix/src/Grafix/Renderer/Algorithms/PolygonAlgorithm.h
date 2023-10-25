@@ -4,7 +4,7 @@
 
 namespace Grafix
 {
-    struct Edge
+    struct Edge final
     {
         int YMax = 0;
         float X = 0.0f;
@@ -29,7 +29,7 @@ namespace Grafix
         }
     };
 
-    class PolygonAlgorithm : public GraphicsAlgorithm
+    class PolygonAlgorithm final : public GraphicsAlgorithm
     {
         using EdgeTable = std::vector<std::vector<Edge>>;
         using ActiveEdgeTable = std::vector<Edge>;

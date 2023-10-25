@@ -17,6 +17,12 @@ namespace std
 
 namespace Grafix
 {
+    enum class PanelState : uint8_t
+    {
+        Entity = 0,
+        Transform, LineClip
+    };
+
     class HierarchyPanel
     {
     public:
@@ -25,19 +31,27 @@ namespace Grafix
 
         void BindScene(const std::shared_ptr<Scene>& scene) { m_Scene = scene; }
 
+        inline void SetPanelState(PanelState state) { m_PanelState = state; }
+        inline PanelState GetPanelState() const { return m_PanelState; }
+
         void SwitchSelectedEntity(Entity entity);
         void ToggleSelectedEntity(Entity entity);
         inline bool HasSelectedEntity() const { return !m_SelectedEntities.empty(); }
-        inline int GetNumOfSelectedEntities() const { return m_SelectedEntities.size(); }
+        inline int GetNumOfSelectedEntities() const { return (int)m_SelectedEntities.size(); }
         std::set<Entity>& GetSelectedEntities() { return m_SelectedEntities; }
 
         void OnUpdate();
 
         // Transformation
-        inline bool IsTransforming() const { return m_IsTransforming; }
         void BeginTransformation();
+        bool IsTransforming() const { return m_PanelState == PanelState::Transform; }
+        TransformComponent& GetTransformComponent() const { return *m_TransformComponent; }
         void EndTransformation(bool apply);
-        glm::vec2 GetPivot() const;
+
+        void BeginLineClipping();
+        bool IsClipping() const { return m_IsClipping; }
+        LineClippingComponent& GetLineClippingComponent() { return m_LineClippingComponent; }
+        void EndLineClipping(bool apply);
 
         bool IsModalOpen() const { return m_IsModalOpen; }
 
@@ -52,17 +66,20 @@ namespace Grafix
         void UI_Hierarchy();
         void UI_Properties();
         void UI_Transformation();
+        void UI_LineClipping();
     private:
         std::set<Entity> m_SelectedEntities{};
         std::shared_ptr<Scene> m_Scene = nullptr;
 
-        bool m_IsTransforming = false;
-        bool m_MustKeepRatio = false;
+        PanelState m_PanelState = PanelState::Entity;
 
         bool m_IsModalOpen = false;
         std::string m_TagBuffer;
 
-        TransformComponent m_TransformComponent{};
-        FillComponent m_FillComponent{};
+        bool m_IsClipping = false;
+        LineClippingComponent m_LineClippingComponent{};
+
+        bool m_MustKeepRatio = false;
+        std::shared_ptr<TransformComponent> m_TransformComponent = nullptr;
     };
 }

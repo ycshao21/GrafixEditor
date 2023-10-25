@@ -4,7 +4,7 @@
 
 namespace Grafix
 {
-    class ArcAlgorithm : public GraphicsAlgorithm
+    class ArcAlgorithm final : public GraphicsAlgorithm
     {
     public:
         static void Midpoint(glm::vec2 center, float radius, float angle1, float angle2, bool major, const glm::vec3& color);

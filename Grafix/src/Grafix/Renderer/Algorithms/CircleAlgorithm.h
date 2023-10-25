@@ -4,7 +4,7 @@
 
 namespace Grafix
 {
-    class CircleAlgorithm : public GraphicsAlgorithm
+    class CircleAlgorithm final : public GraphicsAlgorithm
     {
     public:
         static void Midpoint(glm::vec2 center, float radius, const glm::vec3& color);
