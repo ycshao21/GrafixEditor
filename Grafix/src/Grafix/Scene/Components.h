@@ -50,7 +50,7 @@ namespace Grafix
 
     enum class LineStyleType : uint8_t
     {
-        Solid, Dashed, Dotted
+        Solid, Dashed, DotDashed, Dotted
     };
 
     enum class LineAlgorithmType : uint8_t
@@ -205,7 +205,7 @@ namespace Grafix
         }
     };
 
-    enum class LineClippingAlgorithmType : uint8_t
+    enum class ClippingAlgorithmType : uint8_t
     {
         CohenSutherland, Midpoint
     };
@@ -214,27 +214,41 @@ namespace Grafix
     {
         glm::vec2 P0{ 400.0f, 500.0f };
         glm::vec2 P1{ 500.0f, 500.0f };
-        LineClippingAlgorithmType Algorithm = LineClippingAlgorithmType::CohenSutherland;
+        ClippingAlgorithmType Algorithm = ClippingAlgorithmType::CohenSutherland;
 
         LineClippingComponent() = default;
         LineClippingComponent(const LineClippingComponent&) = default;
 
-        glm::vec2 GetBottomLeft() const
-        {
-            return { glm::min(P0.x, P1.x), glm::min(P0.y, P1.y) };
-        }
+        glm::vec2 GetBottomLeft() const { return { glm::min(P0.x, P1.x), glm::min(P0.y, P1.y) }; }
+        glm::vec2 GetTopRight() const { return { glm::max(P0.x, P1.x), glm::max(P0.y, P1.y) }; }
+    };
 
-        glm::vec2 GetTopRight() const
-        {
-            return { glm::max(P0.x, P1.x), glm::max(P0.y, P1.y) };
-        }
+    struct PolyClippingComponent final
+    {
+        std::vector<glm::vec2> Vertices;
+
+        PolyClippingComponent() = default;
+        PolyClippingComponent(const PolyClippingComponent&) = default;
+    };
+
+    struct EnvironmentComponent final
+    {
+        glm::vec3 LightColor{ 1.0f, 1.0f, 1.0f };
+        glm::vec3 LightDir{ -1.0f, -1.0f, -1.0f };
     };
 
     struct SphereComponent final
     {
-        glm::vec3 EnvirDirection{ -1.0f, -1.0f, -1.0f };
-        bool Model = false;
-        float P = 4.0f;
+        glm::vec3 Position{ 0.0f, 0.0f, 0.0f };
+        float Radius = 1.3f;
+
+        float KAmbient = 0.02f;
+        glm::vec3 KDiffusion{ 1.0f, 0.0f, 0.0f };
+        float KSpecular = 0.7f;
+        float Glossiness = 40.0f;
+
+        bool UsePhong = false;
+
         SphereComponent() = default;
         SphereComponent(const SphereComponent&) = default;
     };

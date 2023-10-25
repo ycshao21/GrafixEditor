@@ -11,7 +11,7 @@ namespace Grafix
         {
             Move = 0,
             Line, Circle, Arc,
-            Fill, LineClip,
+            Fill, LineClip, PolyClip,
             Polygon,
             Curve,
             Sphere,
@@ -34,19 +34,22 @@ namespace Grafix
         bool IsMouseInCanvas() const;
         void UpdateMousePos();
         void OnMoveToolUpdate();
-        void OnFillToolUpdate();
-        void OnPolygonToolUpdate();
         void OnLineToolUpdate();
-        void OnArcToolUpdate();
         void OnCircleToolUpdate();
-        void OnCurveUpdate();
+        void OnArcToolUpdate();
+        void OnFillToolUpdate();
         void OnLineClipToolUpdate();
+        void OnPolyClipToolUpdate();
+        void OnPolygonToolUpdate();
+        void OnCurveUpdate();
 
         void UI_MenuBar();
         void UI_Canvas();
         void UI_Toolbar();
         void UI_Info();
         void UI_Color();
+
+        void SwitchScene(const std::shared_ptr<Scene>& scene);
     private:
         // Canvas
         uint32_t m_CanvasWidth = 1280, m_CanvasHeight = 720;
@@ -54,9 +57,9 @@ namespace Grafix
         bool m_CanvasFocused = false, m_CanvasHovered = false;
 
         // Scene
-        std::shared_ptr<Scene> m_EditorScene = nullptr;
-        Scene m_Scene2D;
-        Scene m_Scene3D;
+        std::shared_ptr<Scene> m_ActiveScene = nullptr;
+        std::shared_ptr<Scene> m_Scene2D = nullptr;
+        std::shared_ptr<Scene> m_Scene3D = nullptr;
         Renderer m_Renderer;
         Camera m_Camera;
         Camera3D m_Camera3D;

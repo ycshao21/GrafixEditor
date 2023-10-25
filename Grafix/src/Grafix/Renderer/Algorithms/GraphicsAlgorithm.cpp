@@ -33,7 +33,10 @@ namespace Grafix
         s_LineWidth = Math::Round(lineWidth);
         s_LineStyle = lineStyle;
 
-        if (lineStyle == LineStyleType::Solid || (s_LineWidth == oldLineWidth && s_LineStyle == oldLineStyle))
+        if (lineStyle == LineStyleType::Solid)
+            return;
+
+        if (s_LineWidth == oldLineWidth && s_LineStyle == oldLineStyle)
             return;
 
         switch (s_LineStyle)
@@ -41,23 +44,32 @@ namespace Grafix
         case LineStyleType::Dashed:
         {
             s_Pattern.clear();
-            for (int i = 0; i <= 7 * s_LineWidth; i++)
-                s_Pattern.push_back('0');
             for (int i = 0; i <= 15 * s_LineWidth; i++)
                 s_Pattern.push_back('1');
+            for (int i = 0; i <= 7 * s_LineWidth; i++)
+                s_Pattern.push_back('0');
+            break;
+        }
+        case LineStyleType::DotDashed:
+        {
+            s_Pattern.clear();
+            for (int i = 0; i <= 12 * s_LineWidth; i++)
+                s_Pattern.push_back('1');
+            for (int i = 0; i <= 5 * s_LineWidth; i++)
+                s_Pattern.push_back('0');
+            for (int i = 0; i <= s_LineWidth; i++)
+                s_Pattern.push_back('1');
+            for (int i = 0; i <= 5 * s_LineWidth; i++)
+                s_Pattern.push_back('0');
             break;
         }
         case LineStyleType::Dotted:
         {
             s_Pattern.clear();
-            for (int i = 0; i <= 3 * s_LineWidth; i++)
-                s_Pattern.push_back('0');
-            for (int i = 0; i <= s_LineWidth / 2; i++)
+            for (int i = 0; i <= s_LineWidth; i++)
                 s_Pattern.push_back('1');
             for (int i = 0; i <= 3 * s_LineWidth; i++)
                 s_Pattern.push_back('0');
-            for (int i = 0; i <= 12 * s_LineWidth; i++)
-                s_Pattern.push_back('1');
             break;
         }
         }

@@ -186,59 +186,79 @@ namespace Grafix
         SeedFillAlgorithm::FloodFill(point, RGBToUint32(color), oldColor);
     }
 
-    void Renderer::SphereRender(const Camera3D& camera, glm::vec3 envir, bool flag, float p, int id)
+    // ****************************************************************************************************************************************************************
+    // Sphere
+    // ****************************************************************************************************************************************************************
+
+    void Renderer::DrawSphere(const Camera3D& camera, const Scene& scene)
     {
-        Ray ray;
-        ray.origin = camera.GetPosition();
+        m_ActiveCamera = &camera;
+        m_ActiveScene = &scene;
 
         for (int y = 0; y < m_Image->GetHeight(); y++)
         {
             for (int x = 0; x < m_Image->GetWidth(); x++)
             {
-                ray.direction = camera.GetRayDirections()[x + y * m_Image->GetWidth()];
-                glm::vec3 color = TraceRay(ray, envir, flag, p);
-                color = glm::clamp(color, 0.0f, 1.0f);
+                glm::vec3 color = CalculateSpherePixel(x, y);
                 m_Pixels[x + y * m_Image->GetWidth()] = RGBToUint32(color);
             }
         }
     }
 
-    glm::vec3 Renderer::TraceRay(Ray ray, const glm::vec3& envir, bool flag, float p)
+    glm::vec3 Renderer::CalculateSpherePixel(uint32_t x, uint32_t y)
     {
-        glm::vec3 rayorigin = ray.origin;
-        glm::vec3 raydirection = ray.direction;
-        float radius = 0.5f;
+        Ray ray;
+        ray.Origin = m_ActiveCamera->GetPosition();
+        ray.Direction = m_ActiveCamera->GetRayDirections()[x + y * m_Image->GetWidth()];
 
-        float a = glm::dot(raydirection, raydirection);
-        float b = 2.0f * glm::dot(rayorigin, raydirection);
-        float c = glm::dot(rayorigin, rayorigin) - radius * radius;
+        glm::vec3 color = TraceRay(ray);
+        return glm::clamp(color, 0.0f, 1.0f);
+    }
+
+    glm::vec3 Renderer::TraceRay(const Ray& ray)
+    {
+        glm::vec3 envirColor = glm::vec3(0.0f);
+
+        auto envirView = m_ActiveScene->GetEntitiesWith<EnvironmentComponent>();
+        if (envirView.empty())
+            return envirColor;
+
+        auto& envir = Entity(envirView.front(), (Scene*)m_ActiveScene).GetComponent<EnvironmentComponent>();
+        envirColor = envir.LightColor * 0.01f;
+
+        auto sphereView = m_ActiveScene->GetEntitiesWith<SphereComponent>();
+        if (sphereView.empty())
+            return envirColor;
+
+        auto& sphere = Entity(sphereView.front(), (Scene*)m_ActiveScene).GetComponent<SphereComponent>();
+
+        glm::vec3 origin = ray.Origin - sphere.Position;
+
+        float a = glm::dot(ray.Direction, ray.Direction);
+        float b = 2.0f * glm::dot(origin, ray.Direction);
+        float c = glm::dot(origin, origin) - sphere.Radius * sphere.Radius;
 
         float discriminant = b * b - 4.0f * a * c;
-        if (discriminant < 0.0f)
-            return glm::vec3(0, 0, 0);
+        if (discriminant < 0.0f)  // Miss
+            return envirColor;
 
         float t0 = (-b + sqrt(discriminant)) / (2.0f * a);
         float closestT = (-b - sqrt(discriminant)) / (2.0f * a);
 
-        glm::vec3 hitPoint = rayorigin + raydirection * closestT;
+        glm::vec3 hitPoint = origin + ray.Direction * closestT;
         glm::vec3 normal = glm::normalize(hitPoint);
 
-        glm::vec3 lightdir = glm::normalize(envir);
+        glm::vec3 lightDir = glm::normalize(envir.LightDir);
+        glm::vec3 ambientIntensity = envir.LightColor * sphere.KAmbient;
+        glm::vec3 diffuseIntensity = sphere.KDiffusion * envir.LightColor * glm::max(glm::dot(normal, -lightDir), 0.0f);
 
-        glm::vec3 sphereColor(1, 0, 0); //surface color
-        //lambert
-        float d = glm::max(glm::dot(normal, -lightdir), 0.0f);
-        sphereColor *= d;
-        auto color = sphereColor;
-        //phong
-        if (flag)
-        {
-            glm::vec3 viewdir = glm::normalize(rayorigin);
-            glm::vec3 halfdir = glm::normalize(-lightdir + viewdir);
-            float s = 0.7f * glm::pow(glm::max(glm::dot(normal, halfdir), 0.0f), p);
-            color += glm::vec3(s, s, s);
-        }
-        // C =[ Kd * max{0,(N dot L)} + Ks * max{0,(N dot H)}^p ] *I
-        return color;
+        if (!sphere.UsePhong)
+            return ambientIntensity + diffuseIntensity;
+
+        glm::vec3 viewDir = glm::normalize(origin);
+        glm::vec3 halfDir = glm::normalize(-lightDir + viewDir);
+        float spec = glm::pow(glm::max(glm::dot(normal, halfDir), 0.0f), sphere.Glossiness);
+        glm::vec3 specularIntensity = sphere.KSpecular * envir.LightColor * spec;
+        return ambientIntensity + diffuseIntensity + specularIntensity;
     }
 }

@@ -22,7 +22,7 @@ namespace Grafix
         const std::vector<Entity>& GetEntities() const { return m_Entities; }
 
         template<typename... T>
-        auto GetEntitiesWith()
+        auto GetEntitiesWith() const
         {
             return m_Registry.view<T...>();
         }

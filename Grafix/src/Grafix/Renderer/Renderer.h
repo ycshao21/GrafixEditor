@@ -28,7 +28,7 @@ namespace Grafix
         int ReadPixel(glm::vec2 pos) const;
 
         void Fill(glm::vec2 point, const glm::vec3& color);
-        void SphereRender(const Camera3D& camera, glm::vec3 envir, bool flag = false, float p = 4.0f, int id = -1);
+        void DrawSphere(const Camera3D& camera, const Scene& scene);
 
         // *******************************************************************************************************************************************************************
         // Line
@@ -126,16 +126,18 @@ namespace Grafix
 
         void DrawRect(const TransformComponent& transform, glm::vec2 leftBottom, glm::vec2 rightTop, const glm::vec3& color, int id = -1);
     private:
-        glm::vec3 TraceRay(Ray ray, const glm::vec3& envir, bool flag, float p);
+        glm::vec3 CalculateSpherePixel(uint32_t x, uint32_t y);
+        glm::vec3 TraceRay(const Ray& ray);
     private:
         std::shared_ptr<Image> m_Image = nullptr;
         uint32_t* m_Pixels = nullptr;
         int* m_IdMap = nullptr;
 
+        const Camera3D* m_ActiveCamera = nullptr;
+        const Scene* m_ActiveScene = nullptr;
+
         glm::vec2 m_ClipP0 = { 0.0f, 0.0f };
         glm::vec2 m_ClipP1 = { 1280, 720 };
         glm::vec3 m_ClearColor = { 0.158f, 0.191f, 0.214f };
-
-        std::vector<uint32_t> m_HorizontalIterators, m_VerticalIterators;
     };
 }
