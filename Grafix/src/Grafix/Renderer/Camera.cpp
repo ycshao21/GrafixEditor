@@ -5,19 +5,19 @@
 
 namespace Grafix
 {
-    Camera::Camera(float aspectRatio, float orthographicSize)
-        : m_AspectRatio(aspectRatio), m_OrthographicSize(orthographicSize)
+    Camera::Camera(float width, float height)
     {
+        SetViewportSize(width, height);
     }
 
-    void Camera::OnUpdate()
+    void Camera::OnUpdate(float ts)
     {
     }
 
     void Camera::SetViewportSize(float width, float height)
     {
         m_AspectRatio = width / height;
-        m_OrthographicSize = 1.0f;
+        m_OrthographicSize = height;
         UpdateViewMatrix();
     }
 
@@ -32,12 +32,11 @@ namespace Grafix
         return Math::CalcTranslationMatrix(m_Position);
     }
 
-    // Wrong
     void Camera::UpdateViewMatrix()
     {
         glm::vec2 offset = glm::vec2(-0.5f * m_OrthographicSize * m_AspectRatio, -0.5 * m_OrthographicSize);
 
-        glm::mat3 transform = /*Math::CalcTranslationMatrix(offset) * */Math::CalcTranslationMatrix(m_Position);
+        glm::mat3 transform = Math::CalcTranslationMatrix(offset) * Math::CalcTranslationMatrix(m_Position);
         m_ViewMatrix = glm::inverse(transform);
     }
 }

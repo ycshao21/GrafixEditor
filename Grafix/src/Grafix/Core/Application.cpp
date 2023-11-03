@@ -3,7 +3,6 @@
 
 #include "Core.h"
 #include "Grafix/Events/ApplicationEvent.h"
-#include "Grafix/Renderer/Renderer.h"
 
 // This code is adapted from ImGui/examples/example_glfw_vulkan/main.cpp and Walnut by The Cherno.
 
@@ -128,6 +127,12 @@ void FrameRender(ImDrawData* drawData)
     }
 
     // Record dear imgui primitives into command buffer
+    ImVec4 clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    const bool main_is_minimized = (drawData->DisplaySize.x <= 0.0f || drawData->DisplaySize.y <= 0.0f);
+    wd->ClearValue.color.float32[0] = clearColor.x * clearColor.w;
+    wd->ClearValue.color.float32[1] = clearColor.y * clearColor.w;
+    wd->ClearValue.color.float32[2] = clearColor.z * clearColor.w;
+    wd->ClearValue.color.float32[3] = clearColor.w;
     ImGui_ImplVulkan_RenderDrawData(drawData, fd->CommandBuffer);
 
     // Submit command buffer
@@ -301,13 +306,16 @@ namespace Grafix
         // Main loop
         while (!m_Window->ShouldClose() && m_Running)
         {
-            m_Stopwatch.Reset();
+            float currentTime = (float)glfwGetTime();
+            float ts = currentTime - m_LastFrameTime;
+            m_LastFrameTime = currentTime;
+            m_DeltaTime = ts;
 
             if (m_Minimized == false)
             {
                 // Update all layers
                 for (Layer* layer : m_LayerStack)
-                    layer->OnUpdate();
+                    layer->OnUpdate(ts);
             }
 
             if (g_SwapChainRebuild)
@@ -341,9 +349,6 @@ namespace Grafix
             m_ImGuiLayer->EndFrame();
 
             m_Window->OnUpdate();
-
-            m_Stopwatch.Stop();
-            m_LastFrameTime = m_Stopwatch.GetSeconds();
         }
     }
 

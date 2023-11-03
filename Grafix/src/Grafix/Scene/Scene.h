@@ -27,7 +27,7 @@ namespace Grafix
             return m_Registry.view<T...>();
         }
 
-        void OnUpdate();
+        void OnUpdate(float ts);
         void Clear();
     private:
         entt::registry m_Registry;

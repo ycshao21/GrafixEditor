@@ -176,13 +176,13 @@ namespace Grafix
         m_Camera3D.OnResize(m_CanvasWidth, m_CanvasHeight);
     }
 
-    void EditorLayer::OnUpdate()
+    void EditorLayer::OnUpdate(float ts)
     {
         UpdateMousePos();
 
         ////m_Camera.SetPosition(glm::vec2{ transform.Translation.x - 320.f, 0.0f });
-        ////m_Camera.OnUpdate();
-        m_Camera3D.OnUpdate(0.1f);
+        ////m_Camera.OnUpdate(ts);
+        m_Camera3D.OnUpdate(ts);
 
         if (!m_HierarchyPanel.IsModalOpen())
         {
@@ -846,9 +846,9 @@ namespace Grafix
     void EditorLayer::UI_Info()
     {
         ImGui::Begin("Info");
-        ImGui::Text("Last Frame Time: %.5fs", Application::Get().GetLastFrameTime());
+        ////ImGui::Text("Last Frame Time: %.5fs", Application::Get().GetLastFrameTime());
 
-        ImGui::Separator();
+        ////ImGui::Separator();
 
         glm::vec2 cameraPos = m_Camera.GetPosition();
         ImGui::Text("Camera Position: (%.3f, %.3f)", cameraPos.x, cameraPos.y);

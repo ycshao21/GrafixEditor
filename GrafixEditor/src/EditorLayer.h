@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Grafix.h"
-#include "Panels/HierarchyPanel.h"
+#include "HierarchyPanel.h"
 
 namespace Grafix
 {
@@ -22,7 +22,7 @@ namespace Grafix
         virtual ~EditorLayer() = default;
 
         virtual void OnAttach() override;
-        virtual void OnUpdate() override;
+        virtual void OnUpdate(float ts) override;
         virtual void OnUIRender() override;
         virtual void OnEvent(Event& e) override;
     private:
@@ -60,7 +60,7 @@ namespace Grafix
         std::shared_ptr<Scene> m_ActiveScene = nullptr;
         std::shared_ptr<Scene> m_Scene2D = nullptr;
         std::shared_ptr<Scene> m_Scene3D = nullptr;
-        Renderer m_Renderer;
+        OldRenderer m_Renderer;
         Camera m_Camera;
         Camera3D m_Camera3D;
 

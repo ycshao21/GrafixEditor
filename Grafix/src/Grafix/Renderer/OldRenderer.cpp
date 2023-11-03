@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Renderer.h"
+#include "OldRenderer.h"
 
 #include "Grafix/Utils/ColorConvert.hpp"
 #include "Grafix/Math/Math.h"
@@ -14,29 +14,9 @@
 
 namespace Grafix
 {
-    std::shared_ptr<Image> Renderer::m_Image = nullptr;
-    uint32_t*              Renderer::m_Pixels = nullptr;
-    glm::vec3              Renderer::m_ClearColor = { 0.158f, 0.191f, 0.214f };
-    int*                   Renderer::m_IdMap = nullptr;
-    const Camera3D*        Renderer::m_ActiveCamera = nullptr;
-    const Scene*           Renderer::m_ActiveScene = nullptr;
-
     static glm::mat3 s_ViewMatrix = glm::mat3(1.0f);
 
-    void Renderer::Init(uint32_t width, uint32_t height)
-    {
-        SetSize(width, height);
-    }
-
-    void Renderer::Shutdown()
-    {
-        delete[] m_Pixels;
-        delete[] m_IdMap;
-
-        m_Image = nullptr;
-    }
-
-    void Renderer::SetSize(uint32_t newWidth, uint32_t newHeight)
+    void OldRenderer::OnResize(uint32_t newWidth, uint32_t newHeight)
     {
         if (m_Image)
         {
@@ -55,7 +35,7 @@ namespace Grafix
         m_IdMap = new int[newWidth * newHeight];
     }
 
-    void Renderer::BeginFrame(const Camera& camera)
+    void OldRenderer::BeginScene(const Camera& camera)
     {
         s_ViewMatrix = camera.GetViewMatrix();
         GraphicsAlgorithm::UpdatePixelData(m_Pixels, m_IdMap, m_Image->GetWidth(), m_Image->GetHeight());
@@ -66,12 +46,12 @@ namespace Grafix
         std::fill(m_IdMap, m_IdMap + m_Image->GetWidth() * m_Image->GetHeight(), -1);
     }
 
-    void Renderer::EndFrame()
+    void OldRenderer::EndScene()
     {
         m_Image->SetPixels(m_Pixels);
     }
 
-    int Renderer::ReadPixel(glm::vec2 pos)
+    int OldRenderer::ReadPixel(glm::vec2 pos) const
     {
         return m_IdMap[(int)pos.x + (int)pos.y * m_Image->GetWidth()];
     }
@@ -80,7 +60,7 @@ namespace Grafix
     // Draw Functions
     // ******************************************************************************************************************************************
 
-    void Renderer::DrawLine(const TransformComponent& transform, glm::vec2 p0, glm::vec2 p1, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, LineAlgorithmType algorithm, int id)
+    void OldRenderer::DrawLine(const TransformComponent& transform, glm::vec2 p0, glm::vec2 p1, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, LineAlgorithmType algorithm, int id)
     {
         GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(lineWidth, lineStyle);
@@ -90,20 +70,20 @@ namespace Grafix
 
         switch (algorithm)
         {
-            case LineAlgorithmType::Midpoint:
-            {
-                LineAlgorithm::Midpoint(newP0, newP1, color);
-                break;
-            }
-            case LineAlgorithmType::Bresenham:
-            {
-                LineAlgorithm::Bresenham(newP0, newP1, color);
-                break;
-            }
+        case LineAlgorithmType::Midpoint:
+        {
+            LineAlgorithm::Midpoint(newP0, newP1, color);
+            break;
+        }
+        case LineAlgorithmType::Bresenham:
+        {
+            LineAlgorithm::Bresenham(newP0, newP1, color);
+            break;
+        }
         }
     }
 
-    void Renderer::DrawCircle(const TransformComponent& transform, glm::vec2 center, float radius, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
+    void OldRenderer::DrawCircle(const TransformComponent& transform, glm::vec2 center, float radius, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
     {
         GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(lineWidth, lineStyle);
@@ -114,7 +94,7 @@ namespace Grafix
     }
 
     // NOTE: Not reliant on camera
-    void Renderer::DrawArc(const TransformComponent& transform, glm::vec2 center, float radius, float angle1, float angle2, bool major, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
+    void OldRenderer::DrawArc(const TransformComponent& transform, glm::vec2 center, float radius, float angle1, float angle2, bool major, const glm::vec3& color, float lineWidth, LineStyleType lineStyle, int id)
     {
         GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(lineWidth, lineStyle);
@@ -135,7 +115,7 @@ namespace Grafix
         ArcAlgorithm::Midpoint(newCenter, newRadius, newAngle1, newAngle2, major, color);
     }
 
-    void Renderer::DrawPolygon(const TransformComponent& transform, const std::vector<glm::vec2>& vertices, const glm::vec3& color, int id)
+    void OldRenderer::DrawPolygon(const TransformComponent& transform, const std::vector<glm::vec2>& vertices, const glm::vec3& color, int id)
     {
         GraphicsAlgorithm::SetID(id);
 
@@ -143,7 +123,7 @@ namespace Grafix
         PolygonAlgorithm::Scanline(newVertices, color);
     }
 
-    void Renderer::DrawCurve(const TransformComponent& transform, const std::vector<glm::vec2>& controlPoints,
+    void OldRenderer::DrawCurve(const TransformComponent& transform, const std::vector<glm::vec2>& controlPoints,
         const glm::vec3& color, int order, float step, std::vector<float>& knots,
         std::vector<float>& weights, float lineWidth, LineStyleType lineStyle, CurveAlgorithmType algorithm, int id)
     {
@@ -154,20 +134,20 @@ namespace Grafix
 
         switch (algorithm)
         {
-            case CurveAlgorithmType::Bezier:
-            {
-                CurveAlgorithm::Bezier(newControlPoints, step, color);
-                break;
-            }
-            case CurveAlgorithmType::NURBS:
-            {
-                CurveAlgorithm::NURBS(newControlPoints, order, step, color, knots, weights);
-                break;
-            }
+        case CurveAlgorithmType::Bezier:
+        {
+            CurveAlgorithm::Bezier(newControlPoints, step, color);
+            break;
+        }
+        case CurveAlgorithmType::NURBS:
+        {
+            CurveAlgorithm::NURBS(newControlPoints, order, step, color, knots, weights);
+            break;
+        }
         }
     }
 
-    void Renderer::DrawCross(const TransformComponent& transform, glm::vec2 center, float radius, const glm::vec3& color, int id)
+    void OldRenderer::DrawCross(const TransformComponent& transform, glm::vec2 center, float radius, const glm::vec3& color, int id)
     {
         GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::SetLineProperties(1.0f, LineStyleType::Solid);
@@ -186,13 +166,13 @@ namespace Grafix
         );
     }
 
-    void Renderer::DrawSquare(glm::vec2 center, float length, const glm::vec3& color, int id)
+    void OldRenderer::DrawSquare(glm::vec2 center, float length, const glm::vec3& color, int id)
     {
         GraphicsAlgorithm::SetID(id);
         GraphicsAlgorithm::DrawSquare(center, length, color);
     }
 
-    void Renderer::DrawRect(const TransformComponent& transform, glm::vec2 leftBottom, glm::vec2 rightTop, const glm::vec3& color, int id)
+    void OldRenderer::DrawRect(const TransformComponent& transform, glm::vec2 leftBottom, glm::vec2 rightTop, const glm::vec3& color, int id)
     {
         DrawLine(transform, leftBottom, { rightTop.x, leftBottom.y }, color, 1.0f, LineStyleType::Dashed, LineAlgorithmType::Bresenham, -1);
         DrawLine(transform, { rightTop.x, leftBottom.y }, rightTop, color, 1.0f, LineStyleType::Dashed, LineAlgorithmType::Bresenham, -1);
@@ -200,17 +180,17 @@ namespace Grafix
         DrawLine(transform, { leftBottom.x, rightTop.y }, leftBottom, color, 1.0f, LineStyleType::Dashed, LineAlgorithmType::Bresenham, -1);
     }
 
-    void Renderer::Fill(glm::vec2 point, const glm::vec3& color)
+    void OldRenderer::Fill(glm::vec2 point, const glm::vec3& color)
     {
         uint32_t oldColor = m_Pixels[(uint32_t)point.x + (uint32_t)point.y * m_Image->GetWidth()];
         SeedFillAlgorithm::FloodFill(point, RGBToUint32(color), oldColor);
     }
 
     // ****************************************************************************************************************************************************************
-    // Sphere (Ray Tracing)
+    // Sphere
     // ****************************************************************************************************************************************************************
 
-    void Renderer::DrawSphere(const Camera3D& camera, const Scene& scene)
+    void OldRenderer::DrawSphere(const Camera3D& camera, const Scene& scene)
     {
         m_ActiveCamera = &camera;
         m_ActiveScene = &scene;
@@ -225,7 +205,7 @@ namespace Grafix
         }
     }
 
-    glm::vec3 Renderer::CalculateSpherePixel(uint32_t x, uint32_t y)
+    glm::vec3 OldRenderer::CalculateSpherePixel(uint32_t x, uint32_t y)
     {
         Ray ray;
         ray.Origin = m_ActiveCamera->GetPosition();
@@ -235,7 +215,7 @@ namespace Grafix
         return glm::clamp(color, 0.0f, 1.0f);
     }
 
-    glm::vec3 Renderer::TraceRay(const Ray& ray)
+    glm::vec3 OldRenderer::TraceRay(const Ray& ray)
     {
         glm::vec3 envirColor = glm::vec3(0.0f);
 

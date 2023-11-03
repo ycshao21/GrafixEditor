@@ -60,7 +60,7 @@ namespace Grafix
 
     struct LineComponent final
     {
-        LineAlgorithmType Algorithm = LineAlgorithmType::Midpoint;
+        LineAlgorithmType Algorithm = LineAlgorithmType::Bresenham;
 
         glm::vec2 P0{ 400.0f, 500.0f };
         glm::vec2 P1{ 500.0f, 500.0f };
@@ -146,7 +146,7 @@ namespace Grafix
         PolygonComponent() = default;
         PolygonComponent(const PolygonComponent&) = default;
 
-        bool IsClosed = false;
+        bool IsClosed = true;
 
         glm::vec2 GetCenterOfGravity() const
         {

@@ -12,10 +12,10 @@ namespace Grafix
     {
     public:
         Camera() = default;
-        Camera(float aspectRatio, float orthographicSize);
+        Camera(float width, float height);
         virtual ~Camera() = default;
 
-        void OnUpdate();
+        void OnUpdate(float ts);
 
         void SetViewportSize(float width, float height);
 
@@ -31,7 +31,7 @@ namespace Grafix
         float m_OrthographicSize = 720.0f;
 
         glm::vec2 m_Position{ 0.0f, 0.0f };
-        float m_MoveSpeed = 1.0f;
+        float m_MoveSpeed = 10.0f;
 
         glm::mat3 m_ViewMatrix;
 

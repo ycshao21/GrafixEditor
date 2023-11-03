@@ -19,7 +19,7 @@ namespace Grafix
 
         virtual void OnAttach() {}
         virtual void OnDetach() {}
-        virtual void OnUpdate() {}
+        virtual void OnUpdate(float ts) {}
         virtual void OnUIRender() {}
         virtual void OnEvent(Event& e) {}
     protected:

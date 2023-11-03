@@ -2,7 +2,7 @@ VULKAN = os.getenv("VULKAN_SDK")
 
 workspace "Grafix"
     architecture "x64"
-    startproject "GrafixEditor"
+    startproject "Game"
 
     configurations
     {
@@ -89,6 +89,52 @@ project "Grafix"
 
 project "GrafixEditor"
     location "GrafixEditor"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++20"
+    staticruntime "on"
+
+    targetdir("bin/" .. outputdir .. "/%{prj.name}")
+    objdir("bin-int/" .. outputdir .. "/%{prj.name}")
+
+    files
+    {
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.cpp"
+    }
+
+    includedirs
+    {
+        "Grafix/src",
+        "Grafix/vendor",
+        "Grafix/vendor/spdlog/include",
+        "%{IncludeDir.ImGui}",
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Vulkan}",
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.entt}"
+    }
+
+    links { "Grafix" }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines { "GF_WINDOWS" }
+
+    filter "configurations:Debug"
+        defines "GF_DEBUG"
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        defines "GF_RELEASE"
+        runtime "Release"
+        optimize "on"
+
+
+project "Game"
+    location "Game"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"

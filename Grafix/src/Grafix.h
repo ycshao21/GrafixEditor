@@ -12,6 +12,7 @@
 
 #include "Grafix/Input/Input.h"
 
+#include "Grafix/Renderer/OldRenderer.h"  // TODO: Remove this
 #include "Grafix/Renderer/Renderer.h"
 #include "Grafix/Renderer/Camera.h"
 #include "Grafix/Renderer/Camera3D.h"

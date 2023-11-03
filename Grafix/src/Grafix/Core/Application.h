@@ -40,7 +40,7 @@ namespace Grafix
         inline bool IsMinimized() { return m_Minimized; }
         inline ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
-        inline float GetLastFrameTime() const { return m_LastFrameTime; }
+        inline float GetDeltaTime() const { return m_DeltaTime; }
 
         // Window
         inline Window& GetWindow() { return *m_Window; }
@@ -80,8 +80,8 @@ namespace Grafix
         std::vector<Layer*> m_LayerStack;
         ImGuiLayer* m_ImGuiLayer;
 
-        Stopwatch m_Stopwatch;
-        float m_LastFrameTime;
+        float m_LastFrameTime = 0.0f;
+        float m_DeltaTime = 0.0f;
     };
 
     // Define the function in your own application.

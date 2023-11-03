@@ -37,7 +37,7 @@ namespace Grafix
         return Entity{};
     }
 
-    void Scene::OnUpdate()
+    void Scene::OnUpdate(float ts)
     {
     }
 
