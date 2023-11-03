@@ -33,7 +33,7 @@ private:
     void UI_Canvas();
     void UI_Info();
 private:
-    GameState m_GameState = GameState::Playing;
+    GameState m_GameState = GameState::Ready;
     std::unique_ptr<Level> m_Level = nullptr;
     std::unique_ptr<Grafix::Camera> m_Camera = nullptr;
 

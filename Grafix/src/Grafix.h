@@ -21,6 +21,7 @@
 #include "Grafix/Scene/Components.h"
 
 #include "Grafix/Math/Math.h"
+#include "Grafix/Utils/Random.h"
 
 #include <imgui.h>
 

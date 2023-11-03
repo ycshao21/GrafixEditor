@@ -6,8 +6,6 @@ class Tube : public GameObject
 {
     using Rock = Grafix::PolygonComponent;
 public:
-    void Init();
-
     virtual void OnUpdate(float ts) override;
     virtual void OnRender() override;
 private:

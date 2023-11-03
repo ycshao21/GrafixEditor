@@ -1,10 +1,10 @@
 #pragma once
 
 #include "GameObject.h"
+#include "../ParticleSystem.h"
 
 class Player final : public GameObject
 {
-    using Transform = Grafix::TransformComponent;
     using Polygon = Grafix::PolygonComponent;
 public:
     void Init();
@@ -13,12 +13,23 @@ public:
     virtual void OnRender() override;
 
     std::vector<glm::vec2> GetCollisionPoints() const;
+
+    // Bullets
+    void UseBullet() { --m_BulletCount; }
+    int GetBulletCount() const { return m_BulletCount; }
+    bool HasBullets() const { return m_BulletCount > 0; }
 private:
-    glm::vec2 m_MoveSpeed = glm::vec2(200.0f, 200.0f);
-    float m_RotationSpeed = 30.0f;
+    // Movement
+    float m_Power = 16.0f;
+    glm::vec2 m_Velocity;
 
-    Polygon m_Plane;
+    ParticleProps m_SmokeProps;
+    ParticleSystem m_SmokeGenerator;
 
+    // Bullets
+    int m_BulletCount;
+
+    // Collision
     std::vector<glm::vec2> m_CollisionPoints = {
         {1.0f, 0.0f},
         {0.5f, 0.3f},
@@ -26,4 +37,7 @@ private:
         {-1.0f, -0.3f},
         {0.5f, -0.3f}
     };
+
+    // Shapes
+    Polygon m_Plane;
 };

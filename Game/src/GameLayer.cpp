@@ -7,7 +7,6 @@ void GameLayer::OnAttach()
     Grafix::Renderer::Init(m_CanvasWidth, m_CanvasHeight);
 
     m_Camera = std::make_unique<Grafix::Camera>(m_CanvasWidth, m_CanvasHeight);
-    m_Camera->SetViewportSize((float)m_CanvasWidth, (float)m_CanvasHeight);
     m_Camera->SetOriginAtCenter();
 
     m_Level = std::make_unique<Level>();
@@ -18,6 +17,8 @@ void GameLayer::OnUpdate(float ts)
 {
     UpdateMousePos();
 
+    auto& playerTransform = m_Level->GetPlayer().GetTransform();
+    m_Camera->SetPosition({ playerTransform.Translation.x + 200.0f, playerTransform.Translation.y });
 
     if (m_Level->IsGameOver())
     {
@@ -29,22 +30,15 @@ void GameLayer::OnUpdate(float ts)
     {
         case GameState::Playing:
         {
-            auto& playerTransform = m_Level->GetPlayer().GetTransform();
-            m_Camera->SetPosition({ playerTransform.Translation.x + 200.0f, playerTransform.Translation.y });
             m_Level->OnUpdate(ts);
             break;
         }
     }
 
+    // Render
     Grafix::Renderer::BeginFrame(*m_Camera);
     m_Level->OnRender();
     Grafix::Renderer::EndFrame();
-
-    ////if (IsMouseInCanvas())
-    ////{
-    ////    int pixelData = Grafix::Renderer::ReadPixel(m_MousePosInCanvas);
-    ////    m_HoveredEntity = pixelData < 0 ? Grafix::Entity() : Grafix::Entity((entt::entity)pixelData, m_ActiveScene.get());
-    ////}
 }
 
 void GameLayer::OnUIRender()
@@ -171,7 +165,6 @@ void GameLayer::UI_Canvas()
 
         m_CanvasFocused = ImGui::IsWindowFocused() && IsMouseInCanvas();
         m_CanvasHovered = ImGui::IsWindowHovered() && IsMouseInCanvas();
-        ////Grafix::Application::Get().GetImGuiLayer()->BlockEvents(!m_CanvasFocused);
 
         if (m_CanvasWidth > 0 && m_CanvasWidth <= s_MaxViewportSize && m_CanvasHeight > 0 && m_CanvasHeight <= s_MaxViewportSize)
         {
@@ -201,12 +194,16 @@ void GameLayer::UI_Info()
         if (m_CanvasHovered)
             ImGui::Text("Mouse Position In Canvas: (%d, %d)", (int)m_MousePosInCanvas.x, (int)m_MousePosInCanvas.y);
 
-        ImGui::Text("Your score: {0}", m_Level->GetScore());
+        ImGui::Text("Your Score: %d", m_Level->GetScore());
+        ImGui::Text("Bullet Remaining: %d", m_Level->GetPlayer().GetBulletCount());
 
-        if (ImGui::Button("Replay"))
+        if (ImGui::Button("Play"))
         {
-            m_Level->Reset();
-            m_GameState = GameState::Playing;
+            if (m_GameState != GameState::Playing)
+            {
+                m_Level->Reset();
+                m_GameState = GameState::Playing;
+            }
         }
     }
     ImGui::End();

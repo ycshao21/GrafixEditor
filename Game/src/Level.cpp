@@ -3,7 +3,6 @@
 void Level::OnAttach()
 {
     Grafix::Renderer::SetClearColor({ 0.3f, 0.4f, 0.5f });
-
     m_Player.Init();
 }
 
@@ -13,14 +12,17 @@ void Level::OnUpdate(float ts)
 
     m_Player.OnUpdate(ts);
 
-    if (CollisionDetection())
+    if (IsPlayerDead())
     {
         m_GameOver = true;
         return;
     }
 
-    if (ImGui::IsKeyPressed(ImGuiKey_UpArrow))
-        CreateBullet();
+    if (Grafix::Input::IsKeyPressed(Grafix::Key::S))
+    {
+        if (m_Player.HasBullets() && !m_Bullet.IsAlive())
+            ShootBullet();
+    }
 
     m_Bullet.OnUpdate(ts);
 }
@@ -48,24 +50,34 @@ void Level::Reset()
     m_Player.Init();
 }
 
-void Level::CreateBullet()
+void Level::ShootBullet()
 {
+    m_Player.UseBullet();
+
     m_Bullet.SetAlive(true);
-    m_Bullet.SetTranslation(m_Player.GetTransform().Translation);
+
+    auto& playerTranslation = m_Player.GetTranslation();
+    auto bulletTranslation = glm::vec2(playerTranslation.x + 30.0f, playerTranslation.y);
+    m_Bullet.SetTranslation(bulletTranslation);
+}
+
+void Level::GenerateBullet()
+{
+    // TODO: Generate bullet randomly
 }
 
 void Level::CreateTube()
 {
 }
 
-bool Level::CollisionDetection()
+bool Level::IsPlayerDead()
 {
     // Wall collision
     float wallEdge = m_WallHeightOffset - m_WallThickness / 2.0f;
 
     for (auto& v : m_Player.GetCollisionPoints())
     {
-        if (std::abs(v.y) > wallEdge)
+        if (std::abs(v.y) > wallEdge + 3.0f)
             return true;
     }
     return false;

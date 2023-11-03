@@ -12,6 +12,8 @@ public:
     void OnRender();
     void OnDetach();
 
+    static float GetGravity() { return 9.8f; }
+
     bool IsGameOver() const { return m_GameOver; }
     const Player& GetPlayer() const { return m_Player; }
 
@@ -19,12 +21,16 @@ public:
 
     void Reset();
 private:
-    void CreateBullet();
+    // Player Actions
+    void ShootBullet();
+
+    // Generation
+    void GenerateBullet();
     void CreateTube();
 
     // Collision detection
-    bool CollisionDetection();
-
+    bool IsPlayerDead();
+    ////bool IsMonsterKilled();
     void RenderBackground();
 private:
     float m_Time = 0.0f;

@@ -8,9 +8,9 @@ public:
     virtual void OnUpdate(float ts) override;
     virtual void OnRender() override;
 
-    bool IsAlive() const { return m_Alive; }
-    void SetAlive(bool alive) { m_Alive = alive; }
+    bool IsAlive() const { return m_LifeRemaining > 0.0f; }
+    void SetAlive(bool alive);
 private:
-    float m_Age = 0.0f;
-    bool m_Alive = false;
+    const float m_LifeTime = 1.5f;
+    float m_LifeRemaining = 0.0f;
 };
