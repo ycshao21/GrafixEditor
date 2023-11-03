@@ -313,7 +313,7 @@ namespace Grafix
         m_MousePosInCanvas = newMousePosInCanvas;
 
         glm::mat3 translationMatrix = m_Camera.GetTranslationMatrix();
-        m_MousePosInWorld = Math::Transform(translationMatrix, m_MousePosInCanvas);
+        m_MousePosInWorld = Math::Transform(translationMatrix,m_MousePosInCanvas);
     }
 
     bool EditorLayer::IsMouseInCanvas() const

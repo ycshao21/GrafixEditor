@@ -17,7 +17,7 @@ private:
     glm::vec2 m_MoveSpeed = glm::vec2(200.0f, 200.0f);
     float m_RotationSpeed = 30.0f;
 
-    Polygon m_RocketBody;
+    Polygon m_Plane;
 
     std::vector<glm::vec2> m_CollisionPoints = {
         {1.0f, 0.0f},

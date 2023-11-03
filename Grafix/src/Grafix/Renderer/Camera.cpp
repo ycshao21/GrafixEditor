@@ -16,8 +16,8 @@ namespace Grafix
 
     void Camera::SetViewportSize(float width, float height)
     {
-        m_AspectRatio = width / height;
-        m_OrthographicSize = height;
+        m_ViewportWidth = width;
+        m_ViewportHeight = height;
         UpdateViewMatrix();
     }
 
@@ -34,9 +34,12 @@ namespace Grafix
 
     void Camera::UpdateViewMatrix()
     {
-        glm::vec2 offset = glm::vec2(-0.5f * m_OrthographicSize * m_AspectRatio, -0.5 * m_OrthographicSize);
-
-        glm::mat3 transform = Math::CalcTranslationMatrix(offset) * Math::CalcTranslationMatrix(m_Position);
+        glm::mat3 transform = Math::CalcTranslationMatrix(m_Position);
+        if (m_OriginAtCenter)
+        {
+            glm::vec2 offset = glm::vec2(-0.5f * m_ViewportWidth, -0.5 * m_ViewportHeight);
+            transform = Math::CalcTranslationMatrix(offset) * transform;
+        }
         m_ViewMatrix = glm::inverse(transform);
     }
 }

@@ -4,16 +4,16 @@ void Player::Init()
 {
     m_Transform.Translation = glm::vec2(0.0f);
     m_Transform.Rotation = 0.0f;
-    m_Transform.Scale = { 70.0f, 80.0f };
+    m_Transform.Scale = { 50.0f, 60.0f };
 
-    m_RocketBody.Vertices = {
+    m_Plane.Vertices = {
         {1.0f, 0.0f},
         {0.5f, 0.3f},
         {-1.0f, 0.3f},
         {-1.0f, -0.3f},
         {0.5f, -0.3f}
     };
-    m_RocketBody.Color = glm::vec3(0.8f, 0.4f, 0.1f);
+    m_Plane.Color = glm::vec3(0.8f, 0.4f, 0.1f);
 }
 
 std::vector<glm::vec2> Player::GetCollisionPoints() const
@@ -40,5 +40,5 @@ void Player::OnUpdate(float ts)
 
 void Player::OnRender()
 {
-    Grafix::Renderer::DrawPolygon(m_Transform, m_RocketBody);
+    Grafix::Renderer::DrawPolygon(m_Transform, m_Plane);
 }

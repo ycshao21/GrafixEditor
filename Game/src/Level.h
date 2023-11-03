@@ -35,6 +35,6 @@ private:
     Bullet m_Bullet;
     std::vector<Tube> m_Tubes;
 
-    float m_WallThickness = 500.0f;
+    float m_WallThickness = 550.0f;
     float m_WallHeightOffset = 600.0f;
 };

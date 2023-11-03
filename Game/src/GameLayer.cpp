@@ -8,6 +8,7 @@ void GameLayer::OnAttach()
 
     m_Camera = std::make_unique<Grafix::Camera>(m_CanvasWidth, m_CanvasHeight);
     m_Camera->SetViewportSize((float)m_CanvasWidth, (float)m_CanvasHeight);
+    m_Camera->SetOriginAtCenter();
 
     m_Level = std::make_unique<Level>();
     m_Level->OnAttach();
