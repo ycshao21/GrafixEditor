@@ -2,7 +2,7 @@
 
 #include "GameObjects/Player.h"
 #include "GameObjects/Bullet.h"
-#include "GameObjects/Tube.h"
+#include "GameObjects/Rock.h"
 
 class Level final
 {
@@ -26,7 +26,7 @@ private:
 
     // Generation
     void GenerateBullet();
-    void CreateTube();
+    void CreateRock();
 
     // Collision detection
     bool IsPlayerDead();
@@ -39,7 +39,7 @@ private:
 
     Player m_Player;
     Bullet m_Bullet;
-    std::vector<Tube> m_Tubes;
+    std::vector<Rock> m_Rocks;
 
     float m_WallThickness = 550.0f;
     float m_WallHeightOffset = 600.0f;

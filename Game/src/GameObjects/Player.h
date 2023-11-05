@@ -18,6 +18,7 @@ public:
     void UseBullet() { --m_BulletCount; }
     int GetBulletCount() const { return m_BulletCount; }
     bool HasBullets() const { return m_BulletCount > 0; }
+
 private:
     // Movement
     float m_Power = 16.0f;
@@ -31,13 +32,15 @@ private:
 
     // Collision
     std::vector<glm::vec2> m_CollisionPoints = {
-        {1.0f, 0.0f},
-        {0.5f, 0.3f},
-        {-1.0f, 0.3f},
-        {-1.0f, -0.3f},
-        {0.5f, -0.3f}
+        {0.85f,0.3f},
+        {0.0f, 0.3f},
+        {-0.9f,0.3f},
+        {-0.9f,-0.3f},
+		{0.0f,-0.3f},
+        {0.85f,-0.3f}
     };
 
     // Shapes
-    Polygon m_Plane;
+    Grafix::PolygonComponent m_Plane;
+    Grafix::CircleComponent m_Windows[3];
 };
