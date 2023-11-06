@@ -1,6 +1,6 @@
 #include "GameLayer.h"
 
-static uint32_t s_MaxViewportSize = 16384;
+////static uint32_t s_MaxViewportSize = 16384;
 
 void GameLayer::OnAttach()
 {
@@ -15,7 +15,7 @@ void GameLayer::OnAttach()
 
 void GameLayer::OnUpdate(float ts)
 {
-    UpdateMousePos();
+    ////UpdateMousePos();
 
     auto& playerTransform = m_Level->GetPlayer().GetTransform();
     m_Camera->SetPosition({ playerTransform.Translation.x + 200.0f, playerTransform.Translation.y });
@@ -73,8 +73,8 @@ void GameLayer::OnUIRender()
         }
 
         UI_MenuBar();
-        UI_Canvas();
         UI_Info();
+        UI_Canvas();
     }
     ImGui::End(); // DockSpace
 }
@@ -111,31 +111,60 @@ bool GameLayer::OnMouseButtonPressed(Grafix::MouseButtonPressedEvent& e)
 
     return false;
 }
-
-void GameLayer::UpdateMousePos()
-{
-    auto [mx, my] = ImGui::GetMousePos();
-    glm::vec2 newMousePosInCanvas = {
-        mx - m_CanvasBounds[0].x,
-        m_CanvasBounds[1].y - my
-    };
-
-    m_MousePositionDelta = newMousePosInCanvas - m_MousePosInCanvas;
-    m_MousePosInCanvas = newMousePosInCanvas;
-
-    glm::mat3 translationMatrix = m_Camera->GetTranslationMatrix();
-    m_MousePosInWorld = Grafix::Math::Transform(translationMatrix, m_MousePosInCanvas);
-}
-
-bool GameLayer::IsMouseInCanvas() const
-{
-    return m_MousePosInCanvas.x >= 0.0f && m_MousePosInCanvas.x < (float)m_CanvasWidth
-        && m_MousePosInCanvas.y >= 0.0f && m_MousePosInCanvas.y < (float)m_CanvasHeight;
-}
+////
+////void GameLayer::UpdateMousePos()
+////{
+////    auto [mx, my] = ImGui::GetMousePos();
+////    glm::vec2 newMousePosInCanvas = {
+////        mx - m_CanvasBounds[0].x,
+////        m_CanvasBounds[1].y - my
+////    };
+////
+////    m_MousePositionDelta = newMousePosInCanvas - m_MousePosInCanvas;
+////    m_MousePosInCanvas = newMousePosInCanvas;
+////
+////    glm::mat3 translationMatrix = m_Camera->GetTranslationMatrix();
+////    m_MousePosInWorld = Grafix::Math::Transform(translationMatrix, m_MousePosInCanvas);
+////}
+////
+////bool GameLayer::IsMouseInCanvas() const
+////{
+////    return m_MousePosInCanvas.x >= 0.0f && m_MousePosInCanvas.x < (float)m_CanvasWidth
+////        && m_MousePosInCanvas.y >= 0.0f && m_MousePosInCanvas.y < (float)m_CanvasHeight;
+////}
 
 // -----------------------------------------------------------------
 // --------------------------- UI Panels ---------------------------
 // -----------------------------------------------------------------
+
+void GameLayer::UI_Canvas()
+{
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("Canvas");
+    {
+        ////ImVec2 canvasMinRegion = ImGui::GetWindowContentRegionMin();
+        ////ImVec2 canvasMaxRegion = ImGui::GetWindowContentRegionMax();
+        ////ImVec2 canvasOffset = ImGui::GetWindowPos();
+        ////m_CanvasBounds[0] = { canvasMinRegion.x + canvasOffset.x, canvasMinRegion.y + canvasOffset.y };  // Top-left
+        ////m_CanvasBounds[1] = { m_CanvasBounds[0].x + m_CanvasWidth, m_CanvasBounds[0].y + m_CanvasHeight };  // Bottom-right
+
+        ////m_CanvasFocused = ImGui::IsWindowFocused() && IsMouseInCanvas();
+        ////m_CanvasHovered = ImGui::IsWindowHovered() && IsMouseInCanvas();
+
+        ////if (m_CanvasWidth > 0 && m_CanvasWidth <= s_MaxViewportSize && m_CanvasHeight > 0 && m_CanvasHeight <= s_MaxViewportSize)
+        ////{
+            if (auto image = Grafix::Renderer::GetImage())
+            {
+                ImGui::Image(image->GetDescriptorSet(),
+                    { (float)image->GetWidth(), (float)image->GetHeight() },
+                    ImVec2(0, 1), ImVec2(1, 0)
+                );
+            }
+        ////}
+    }
+    ImGui::End();
+    ImGui::PopStyleVar();
+}
 
 void GameLayer::UI_MenuBar()
 {
@@ -152,34 +181,7 @@ void GameLayer::UI_MenuBar()
     }
 }
 
-void GameLayer::UI_Canvas()
-{
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::Begin("Canvas");
-    {
-        ImVec2 canvasMinRegion = ImGui::GetWindowContentRegionMin();
-        ImVec2 canvasMaxRegion = ImGui::GetWindowContentRegionMax();
-        ImVec2 canvasOffset = ImGui::GetWindowPos();
-        m_CanvasBounds[0] = { canvasMinRegion.x + canvasOffset.x, canvasMinRegion.y + canvasOffset.y };  // Top-left
-        m_CanvasBounds[1] = { m_CanvasBounds[0].x + m_CanvasWidth, m_CanvasBounds[0].y + m_CanvasHeight };  // Bottom-right
-
-        m_CanvasFocused = ImGui::IsWindowFocused() && IsMouseInCanvas();
-        m_CanvasHovered = ImGui::IsWindowHovered() && IsMouseInCanvas();
-
-        if (m_CanvasWidth > 0 && m_CanvasWidth <= s_MaxViewportSize && m_CanvasHeight > 0 && m_CanvasHeight <= s_MaxViewportSize)
-        {
-            if (auto image = Grafix::Renderer::GetImage())
-            {
-                ImGui::Image(image->GetDescriptorSet(),
-                    { (float)image->GetWidth(), (float)image->GetHeight() },
-                    ImVec2(0, 1), ImVec2(1, 0)
-                );
-            }
-        }
-    }
-    ImGui::End();
-    ImGui::PopStyleVar();
-}
+static glm::vec3 testColor;
 
 void GameLayer::UI_Info()
 {
@@ -191,8 +193,8 @@ void GameLayer::UI_Info()
 
         glm::vec2 cameraPos = m_Camera->GetPosition();
         ImGui::Text("Camera Position: (%.3f, %.3f)", cameraPos.x, cameraPos.y);
-        if (m_CanvasHovered)
-            ImGui::Text("Mouse Position In Canvas: (%d, %d)", (int)m_MousePosInCanvas.x, (int)m_MousePosInCanvas.y);
+        ////if (m_CanvasHovered)
+        ////    ImGui::Text("Mouse Position In Canvas: (%d, %d)", (int)m_MousePosInCanvas.x, (int)m_MousePosInCanvas.y);
 
         ImGui::Text("Your Score: %d", m_Level->GetScore());
         ImGui::Text("Bullet Remaining: %d", m_Level->GetPlayer().GetBulletCount());
@@ -205,6 +207,8 @@ void GameLayer::UI_Info()
                 m_GameState = GameState::Playing;
             }
         }
+
+        ImGui::ColorPicker3("Color", glm::value_ptr(testColor));
     }
     ImGui::End();
 }

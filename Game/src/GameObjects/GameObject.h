@@ -7,8 +7,8 @@ class GameObject
 public:
     virtual ~GameObject() = default;
 
-    virtual void OnUpdate(float ts) = 0;
-    virtual void OnRender() = 0;
+    virtual void OnUpdate(float ts) {}
+    virtual void OnRender() {}
 
     void SetTranslation(const glm::vec2& translation) { m_Transform.Translation = translation; }
     void SetRotation(float rotation) { m_Transform.Rotation = rotation; }

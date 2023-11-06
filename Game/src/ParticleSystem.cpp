@@ -12,8 +12,8 @@ void ParticleSystem::Emit(const ParticleProps& particleProps)
 	particle.Position = particleProps.Position;
 
 	particle.Velocity = particleProps.Velocity;
-	particle.Velocity.x += particleProps.VelocityVariation.x * Grafix::Random::GenerateFloat(-1.0f, 1.0f);
-	particle.Velocity.y += particleProps.VelocityVariation.y * Grafix::Random::GenerateFloat(-1.0f, 1.0f);
+	particle.Velocity.x += particleProps.VelocityVariation.x * Grafix::Random::GenerateFloat();
+	particle.Velocity.y += particleProps.VelocityVariation.y * Grafix::Random::GenerateFloat();
 
 	particle.BeginSize = particleProps.BeginSize;
 	particle.EndSize = particleProps.EndSize;

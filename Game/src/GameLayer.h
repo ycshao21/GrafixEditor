@@ -26,11 +26,11 @@ private:
     bool OnKeyPressed(Grafix::KeyPressedEvent& e);
     bool OnMouseButtonPressed(Grafix::MouseButtonPressedEvent& e);
 
-    bool IsMouseInCanvas() const;
-    void UpdateMousePos();
+    ////bool IsMouseInCanvas() const;
+    ////void UpdateMousePos();
 
-    void UI_MenuBar();
     void UI_Canvas();
+    void UI_MenuBar();
     void UI_Info();
 private:
     GameState m_GameState = GameState::Ready;

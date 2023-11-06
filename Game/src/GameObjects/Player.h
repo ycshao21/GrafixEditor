@@ -5,12 +5,14 @@
 
 class Player final : public GameObject
 {
-    using Polygon = Grafix::PolygonComponent;
 public:
-    void Init();
+    Player();
+    virtual ~Player() = default;
 
     virtual void OnUpdate(float ts) override;
     virtual void OnRender() override;
+
+    void Reset();
 
     std::vector<glm::vec2> GetCollisionPoints() const;
 
@@ -18,14 +20,13 @@ public:
     void UseBullet() { --m_BulletCount; }
     int GetBulletCount() const { return m_BulletCount; }
     bool HasBullets() const { return m_BulletCount > 0; }
-
 private:
     // Movement
     float m_Power = 16.0f;
     glm::vec2 m_Velocity;
 
-    ParticleProps m_SmokeProps;
-    ParticleSystem m_SmokeGenerator;
+    ParticleProps m_BubbleProps;
+    ParticleSystem m_BubbleGenerator;
 
     // Bullets
     int m_BulletCount;
@@ -41,6 +42,6 @@ private:
     };
 
     // Shapes
-    Grafix::PolygonComponent m_Plane;
+    Grafix::PolygonComponent m_Body;
     Grafix::CircleComponent m_Windows[3];
 };

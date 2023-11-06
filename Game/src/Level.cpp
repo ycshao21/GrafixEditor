@@ -1,26 +1,31 @@
 #include "Level.h"
 #include <random>
 
-static bool IsInPolygon(glm::vec2 point,std::vector<glm::vec2> polygon) 
+static bool IsInPolygon(glm::vec2 point, const std::vector<glm::vec2>& polygon) 
 { 
-	int numIntersections = 0;
-	int numVertices =polygon.size();
-	for (int i = 0; i < numVertices; i++) 
+	int numOfIntersections = 0;
+
+	for (int i = 0; i < polygon.size(); i++) 
 	{
-		const glm::vec2 p1 = polygon[i];
-		const glm::vec2 p2 = polygon[(i + 1) % numVertices];
+		auto& p1 = polygon[i];
+		auto& p2 = polygon[(i + 1) % polygon.size()];
 
 		if ((p1.y < point.y && p2.y >= point.y) || (p2.y < point.y && p1.y >= point.y)) 
 			if (p1.x + (point.y - p1.y) / (p2.y - p1.y) * (p2.x - p1.x) < point.x) 
-				numIntersections++;
+				++numOfIntersections;
 	}
-	return (numIntersections % 2 != 0);
+
+	return numOfIntersections & 1;
 }
 
 
 void Level::OnAttach()
 {
-	Grafix::Renderer::SetClearColor({ 0.3f, 0.4f, 0.5f });
+	// Background color (ocean)
+	Grafix::Renderer::SetClearColor({ 0.140f, 0.307f, 0.389f });
+
+	Rock::Init();
+	Fish::Init();
 
 	Reset();
 }
@@ -44,16 +49,21 @@ void Level::OnUpdate(float ts)
 	}
 
 	m_Bullet.OnUpdate(ts);
+	
+	for (auto& fish : m_Fishes)
+		fish.OnUpdate(ts);
 }
 
 void Level::OnRender()
 {
-	// Background
-	RenderBackground();
+	for (auto& fish : m_Fishes)
+		fish.OnRender();
 
 	// Player
 	for (auto& rock : m_Rocks)
 		rock.OnRender();
+
+	RenderWalls();
 
 	m_Player.OnRender();
 	m_Bullet.OnRender();
@@ -69,18 +79,11 @@ void Level::Reset()
 	m_Score = 0;
 	m_GameOver = false;
 
-	m_Player.Init();
+	m_Player.Reset();
 
-	//init Rocks
-	float wallEdge = m_WallHeightOffset - m_WallThickness / 2.0f;
-	for (int i = 0; i < 10; i++)
-	{
-		Rock rock;
-		rock.Init();
-		rock.GetTransform().Translation.x = 1000.0f + i * 1000.0f;
-		rock.GetTransform().Translation.y = -wallEdge;
-		m_Rocks.push_back(rock);
-	}
+	// TEMP
+	GenerateRock();
+	GenerateFish();
 }
 
 void Level::ShootBullet()
@@ -99,19 +102,59 @@ void Level::GenerateBullet()
 	// TODO: Generate bullet randomly
 }
 
-void Level::CreateRock()
+void Level::GenerateRock()
 {
+	// TEMP: To generate rocks randomly and call it in OnUpdate()
 
+    m_Rocks.resize(20);
+    float gap = 580.0f;
+    float startX = 950.0f;
+
+    for (int i = 0; i < m_Rocks.size(); i += 2)
+    {
+        float center = Grafix::Random::GenerateFloat(-180.0f, 180.0f);
+        float verticalGap = Grafix::Random::GenerateFloat(90.0f, 120.0f);
+
+        float bottomRockHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
+        float topRockHeight = 2.0f * m_WallHeightOffset - bottomRockHeight - verticalGap;
+
+        Rock& bottomRock = m_Rocks[i];
+        bottomRock.SetTranslation({ startX , -m_WallHeightOffset - 5.0f });
+        bottomRock.SetScale({ 330.0f, bottomRockHeight });
+
+        Rock& topRock = m_Rocks[i + 1];
+        topRock.SetTranslation({ startX , m_WallHeightOffset + 5.0f });
+        topRock.SetRotation(180.0f);
+        topRock.SetScale({ 330.0f, topRockHeight });
+
+        startX += gap;
+    }
+}
+
+void Level::GenerateFish()
+{
+    m_Fishes.resize(10);
+    float startX = -700.0f;
+
+    for (auto& fish: m_Fishes)
+    {
+		float scale = Grafix::Random::GenerateFloat(10.0f, 35.0f);
+
+        fish.SetTranslation({ startX , Grafix::Random::GenerateFloat(-300.0f, 300.0f) });
+		fish.SetScale(glm::vec2(scale));
+
+        float gap = Grafix::Random::GenerateFloat(100.0f, 600.0f);
+        startX += gap;
+    }
 }
 
 bool Level::IsPlayerDead()
 {
 	// Wall collision
-	float wallEdge = m_WallHeightOffset - m_WallThickness / 2.0f;
 
 	for (auto& v : m_Player.GetCollisionPoints())
 	{
-		if (std::abs(v.y) > wallEdge + 3.0f)
+		if (std::abs(v.y) > m_WallHeightOffset + 3.0f)
 			return true;
 	}
 
@@ -120,117 +163,41 @@ bool Level::IsPlayerDead()
 	{
 		for (auto v : m_Player.GetCollisionPoints())
 		{
-			if (IsInPolygon(v, rock.collisionPoints()))
+			if (IsInPolygon(v, rock.GetCollisionPoints()))
 				return true;
 		}
 	}
 	return false;
 }
 
-void Level::RenderBackground()
+void Level::RenderWalls()
 {
-	std::vector<glm::vec2> squareVertices = {
+	std::vector<glm::vec2> wallVertices = {
 		{-0.5f, -0.5f},
 		{0.5f, -0.5f},
 		{0.5f, 0.5f},
 		{-0.5f, 0.5f}
 	};
+    glm::vec3 wallColor = { 0.109f, 0.079f, 0.013f };
 
 	// Walls
 	{
-		glm::vec3 wallColor = { 0.07f, 0.07f, 0.07f };
+		// Ceiling
+		Grafix::TransformComponent ceilingTransform;
+		ceilingTransform.Pivot = { 0.0f, -0.5f };
+		ceilingTransform.Translation = { m_Player.GetTransform().Translation.x, m_WallHeightOffset };
+		ceilingTransform.Scale = { 1800.0f,  m_WallThickness };
+		Grafix::Renderer::DrawPolygon(ceilingTransform, wallVertices, wallColor);
 
-		Grafix::TransformComponent ceilTransform;
-		ceilTransform.Scale = { 2000.0f,  m_WallThickness };
-		ceilTransform.Translation = { m_Player.GetTransform().Translation.x, m_WallHeightOffset };
-		Grafix::Renderer::DrawPolygon(ceilTransform, squareVertices, wallColor);
-
+		// Floor
 		Grafix::TransformComponent floorTransform;
-		floorTransform.Scale = { 2000.0f,  m_WallThickness };
-		floorTransform.Translation = { m_Player.GetTransform().Translation.x, -m_WallHeightOffset };
-		Grafix::Renderer::DrawPolygon(floorTransform, squareVertices, wallColor);
+		ceilingTransform.Pivot = { 0.0f, 0.5f };
+		ceilingTransform.Translation = { m_Player.GetTransform().Translation.x, -m_WallHeightOffset };
+		ceilingTransform.Scale = { 1800.0f,  m_WallThickness };
+		Grafix::Renderer::DrawPolygon(ceilingTransform, wallVertices, wallColor);
 	}
+}
 
-	//Fish
-	{
-		Grafix::TransformComponent fishTransform;
-		float fishThickness = 30.0f;
-		glm::vec3 fishColor = { 1.0f, 0.0f, 0.0f };
-
-		fishTransform.Scale = { fishThickness,fishThickness };
-
-		Grafix::CurveComponent fishCurve;
-		fishCurve.ControlPoints = {
-			{-0.8f,0.0f},
-			{-0.4f,0.6f},
-			{0.3f,0.1f},
-		};
-		fishCurve.LineWidth = 2.0f;
-		fishCurve.Color = fishColor;
-
-		Grafix::CurveComponent fishCurve2;
-		fishCurve2.ControlPoints = {
-			{0.3f,0.1f},
-			{0.4f,0.15f},
-			{0.6f,0.3f},
-		};
-		fishCurve2.LineWidth = 2.0f;
-		fishCurve2.Color = fishColor;
-
-		Grafix::CurveComponent fishCurve3;
-		fishCurve3.ControlPoints = {
-			{0.6f,0.3f},
-			{0.8f,0.0f},
-			{0.6f,-0.3f},
-		};
-		fishCurve3.LineWidth = 2.0f;
-		fishCurve3.Color = fishColor;
-
-		Grafix::CurveComponent fishCurve4;
-		fishCurve4.ControlPoints = {
-			{0.6f,-0.3f},
-			{0.4f,-0.15f},
-			{0.3f,-0.1f},
-		};
-		fishCurve4.LineWidth = 2.0f;
-		fishCurve4.Color = fishColor;
-
-		Grafix::CurveComponent fishCurve5;
-		fishCurve5.ControlPoints = {
-			{0.3f,-0.1f},
-			{-0.4f,-0.6f},
-			{-0.8f,0.0f},
-		};
-		fishCurve5.LineWidth = 2.0f;
-		fishCurve5.Color = fishColor;
-
-		Grafix::LineComponent line1, line2;
-		line1.P0 = { -0.5f,0.27f };
-		line1.P1 = { -0.3f,0.0f };
-		line2.P0 = { -0.5f,-0.27f };
-		line2.P1 = { -0.3f,0.0f };
-		line1.LineWidth = 1.0f;
-		line2.LineWidth = 1.0f;
-		line1.Color = glm::vec3{ 1.0f };
-		line2.Color = glm::vec3{ 1.0f };
-		Grafix::CircleComponent eye;
-		eye.Center = { -0.6f,0.0f };
-		eye.Radius = 0.05f;
-		eye.LineWidth = 1.0f;
-		eye.Color = glm::vec3{ 0.0f };
-
-		for (int i = 0; i < 20; i++)
-		{
-			fishTransform.Translation.x += 500;
-
-			Grafix::Renderer::DrawCurve(fishTransform, fishCurve);
-			Grafix::Renderer::DrawCurve(fishTransform, fishCurve2);
-			Grafix::Renderer::DrawCurve(fishTransform, fishCurve3);
-			Grafix::Renderer::DrawCurve(fishTransform, fishCurve4);
-			Grafix::Renderer::DrawCurve(fishTransform, fishCurve5);
-			Grafix::Renderer::DrawLine(fishTransform, line1);
-			Grafix::Renderer::DrawLine(fishTransform, line2);
-			Grafix::Renderer::DrawCircle(fishTransform, eye);
-		}
-	}
+void Level::RenderRocks()
+{
 }
