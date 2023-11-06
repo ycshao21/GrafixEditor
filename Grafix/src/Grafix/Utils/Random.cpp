@@ -20,7 +20,7 @@ namespace Grafix
 
     float Random::GenerateFloat(float min, float max)
     {
-        return min + 0.5f * (GenerateFloat() + 1.0f) * (max - min);
+        return min + GenerateFloat() * (max - min);
     }
 }
 
