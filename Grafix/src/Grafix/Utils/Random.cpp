@@ -13,24 +13,14 @@ namespace Grafix
         s_RandomEngine.seed(std::random_device()());
     }
 
-    int Random::GenerateInt()
-    {
-        return s_Distribution(s_RandomEngine);
-    }
-
-    int Random::GenerateInt(int min, int max)
-    {
-        return min + GenerateInt() % (max - min);
-    }
-
     float Random::GenerateFloat()
     {
-        return (float)GenerateInt() / (float)std::numeric_limits<uint32_t>::max();
+        return (float)s_Distribution(s_RandomEngine) / (float)std::numeric_limits<uint32_t>::max();
     }
 
     float Random::GenerateFloat(float min, float max)
     {
-        return min + GenerateFloat() * (max - min);
+        return min + 0.5f * (GenerateFloat() + 1.0f) * (max - min);
     }
 }
 
