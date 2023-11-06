@@ -19,7 +19,7 @@ struct ParticleProps
 	float ColorVariation = 0.3f;
 };
 
-class ParticleSystem
+class ParticleSystem final
 {
 public:
 	ParticleSystem();

@@ -3,7 +3,7 @@
 
 #include "GameLayer.h"
 
-class Game : public Grafix::Application
+class Game final : public Grafix::Application
 {
 public:
     Game(const Grafix::AppSpecification& appSpec)

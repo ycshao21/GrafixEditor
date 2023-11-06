@@ -22,9 +22,6 @@ public:
 
     void Reset();
 private:
-    // Player Actions
-    void ShootBullet();
-
     // Generation
     void GenerateBullet();
     void GenerateRock();
@@ -32,6 +29,8 @@ private:
 
     // Collision detection
     bool IsPlayerDead();
+    void BulletCollisionDetection();
+
     ////bool IsMonsterKilled();
     void RenderWalls();
     void RenderRocks();

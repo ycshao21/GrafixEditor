@@ -2,7 +2,7 @@
 
 Grafix::PolygonComponent Rock::s_Rock;
 
-std::vector<glm::vec2> Rock::GetCollisionPoints()
+std::vector<glm::vec2> Rock::GetCollisionPoints() const
 {
 	return Grafix::Math::Transform(m_Transform.GetTransformMatrix(), s_Rock.Vertices);
 }

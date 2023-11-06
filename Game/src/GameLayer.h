@@ -4,7 +4,7 @@
 
 #include "Level.h"
 
-class GameLayer : public Grafix::Layer
+class GameLayer final : public Grafix::Layer
 {
     enum class GameState : uint8_t
     {

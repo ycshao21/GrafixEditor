@@ -26,6 +26,7 @@ void Level::OnAttach()
 
 	Rock::Init();
 	Fish::Init();
+	Bullet::Init();
 
 	Reset();
 }
@@ -45,10 +46,17 @@ void Level::OnUpdate(float ts)
 	if (Grafix::Input::IsKeyPressed(Grafix::Key::S))
 	{
 		if (m_Player.HasBullets() && !m_Bullet.IsAlive())
-			ShootBullet();
+		{
+            m_Player.UseBullet();
+            m_Bullet.Activate(m_Player.GetTranslation(), m_Player.GetRotation());
+		}
 	}
 
-	m_Bullet.OnUpdate(ts);
+	if (m_Bullet.IsAlive())
+	{
+		BulletCollisionDetection();
+        m_Bullet.OnUpdate(ts);
+	}
 	
 	for (auto& fish : m_Fishes)
 		fish.OnUpdate(ts);
@@ -65,8 +73,10 @@ void Level::OnRender()
 
 	RenderWalls();
 
+	if(m_Bullet.IsAlive())
+        m_Bullet.OnRender();
+
 	m_Player.OnRender();
-	m_Bullet.OnRender();
 }
 
 void Level::OnDetach()
@@ -86,17 +96,6 @@ void Level::Reset()
 	GenerateFish();
 }
 
-void Level::ShootBullet()
-{
-	m_Player.UseBullet();
-
-	m_Bullet.SetAlive(true);
-
-	auto& playerTranslation = m_Player.GetTranslation();
-	auto bulletTranslation = glm::vec2(playerTranslation.x + 30.0f, playerTranslation.y);
-	m_Bullet.SetTranslation(bulletTranslation);
-}
-
 void Level::GenerateBullet()
 {
 	// TODO: Generate bullet randomly
@@ -112,17 +111,18 @@ void Level::GenerateRock()
 
     for (int i = 0; i < m_Rocks.size(); i += 2)
     {
-        float center = Grafix::Random::GenerateFloat(-180.0f, 180.0f);
-        float verticalGap = Grafix::Random::GenerateFloat(90.0f, 120.0f);
+        float center = Grafix::Random::GenerateFloat(-190.0f, 190.0f);
+        float verticalGap = Grafix::Random::GenerateFloat(90.0f, 130.0f);
 
-        float bottomRockHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
-        float topRockHeight = 2.0f * m_WallHeightOffset - bottomRockHeight - verticalGap;
+		GF_INFO("center: {0}, gap: {1}", center, verticalGap);
 
         Rock& bottomRock = m_Rocks[i];
+        float bottomRockHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
         bottomRock.SetTranslation({ startX , -m_WallHeightOffset - 5.0f });
         bottomRock.SetScale({ 330.0f, bottomRockHeight });
 
         Rock& topRock = m_Rocks[i + 1];
+        float topRockHeight = 2.0f * m_WallHeightOffset - bottomRockHeight - verticalGap;
         topRock.SetTranslation({ startX , m_WallHeightOffset + 5.0f });
         topRock.SetRotation(180.0f);
         topRock.SetScale({ 330.0f, topRockHeight });
@@ -170,6 +170,27 @@ bool Level::IsPlayerDead()
 	return false;
 }
 
+void Level::BulletCollisionDetection()
+{
+    for (auto& v : m_Bullet.GetCollisionPoints())
+    {
+        if (std::abs(v.y) > m_WallHeightOffset)
+        {
+            m_Bullet.Deactivate();
+            return;
+        }
+
+        for (auto& rock : m_Rocks)
+        {
+            if (IsInPolygon(v, rock.GetCollisionPoints()))
+            {
+                m_Bullet.Deactivate();
+                return;
+            }
+		}
+   }
+}
+
 void Level::RenderWalls()
 {
 	std::vector<glm::vec2> wallVertices = {
@@ -178,7 +199,7 @@ void Level::RenderWalls()
 		{0.5f, 0.5f},
 		{-0.5f, 0.5f}
 	};
-    glm::vec3 wallColor = { 0.109f, 0.079f, 0.013f };
+    glm::vec3 wallColor = { 0.159f, 0.109f, 0.063f };
 
 	// Walls
 	{
@@ -191,10 +212,10 @@ void Level::RenderWalls()
 
 		// Floor
 		Grafix::TransformComponent floorTransform;
-		ceilingTransform.Pivot = { 0.0f, 0.5f };
-		ceilingTransform.Translation = { m_Player.GetTransform().Translation.x, -m_WallHeightOffset };
-		ceilingTransform.Scale = { 1800.0f,  m_WallThickness };
-		Grafix::Renderer::DrawPolygon(ceilingTransform, wallVertices, wallColor);
+		floorTransform.Pivot = { 0.0f, 0.5f };
+		floorTransform.Translation = { m_Player.GetTransform().Translation.x, -m_WallHeightOffset };
+		floorTransform.Scale = { 1800.0f,  m_WallThickness };
+		Grafix::Renderer::DrawPolygon(floorTransform, wallVertices, wallColor);
 	}
 }
 

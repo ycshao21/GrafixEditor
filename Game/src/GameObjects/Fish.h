@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GameObject.h"
+#include "../GameObject.h"
 
-class Fish : public GameObject
+class Fish final : public GameObject
 {
 public:
     static void Init();
