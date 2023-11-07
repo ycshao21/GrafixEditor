@@ -1,6 +1,6 @@
 #include "GameLayer.h"
 
-////static uint32_t s_MaxViewportSize = 16384;
+static uint32_t s_MaxViewportSize = 16384;
 
 void GameLayer::OnAttach()
 {
@@ -10,7 +10,7 @@ void GameLayer::OnAttach()
     m_Camera->SetOriginAtCenter();
 
     m_Level = std::make_unique<Level>();
-    m_Level->OnAttach();
+    m_Level->Init();
 }
 
 void GameLayer::OnUpdate(float ts)
@@ -151,8 +151,8 @@ void GameLayer::UI_Canvas()
         ////m_CanvasFocused = ImGui::IsWindowFocused() && IsMouseInCanvas();
         ////m_CanvasHovered = ImGui::IsWindowHovered() && IsMouseInCanvas();
 
-        ////if (m_CanvasWidth > 0 && m_CanvasWidth <= s_MaxViewportSize && m_CanvasHeight > 0 && m_CanvasHeight <= s_MaxViewportSize)
-        ////{
+        if (m_CanvasWidth > 0 && m_CanvasWidth <= s_MaxViewportSize && m_CanvasHeight > 0 && m_CanvasHeight <= s_MaxViewportSize)
+        {
             if (auto image = Grafix::Renderer::GetImage())
             {
                 ImGui::Image(image->GetDescriptorSet(),
@@ -160,7 +160,7 @@ void GameLayer::UI_Canvas()
                     ImVec2(0, 1), ImVec2(1, 0)
                 );
             }
-        ////}
+        }
     }
     ImGui::End();
     ImGui::PopStyleVar();
@@ -201,10 +201,19 @@ void GameLayer::UI_Info()
 
         if (ImGui::Button("Play"))
         {
-            if (m_GameState != GameState::Playing)
+            switch (m_GameState)
             {
-                m_Level->Reset();
-                m_GameState = GameState::Playing;
+                case GameLayer::GameState::Ready:
+                {
+                    m_GameState = GameState::Playing;
+                    break;
+                }
+                case GameLayer::GameState::GameOver:
+                {
+                    m_Level->Reset();
+                    m_GameState = GameState::Playing;
+                    break;
+                }
             }
         }
 

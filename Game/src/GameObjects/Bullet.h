@@ -11,7 +11,7 @@ public:
     virtual void OnUpdate(float ts) override;
     virtual void OnRender() override;
 
-    std::vector<glm::vec2> GetCollisionPoints() const;
+    glm::vec2 GetCollisionPoint() const;
 
     bool IsAlive() const { return m_LifeRemaining > 0.0f; }
     void Activate(glm::vec2 position, float degree);
@@ -22,12 +22,7 @@ private:
     const float m_LifeTime = 1.5f;
     float m_LifeRemaining = 0.0f;
 
-    std::vector<glm::vec2> m_CollisionPoints = {
-        {-1.0f, 0.0f},
-        {1.0f, 0.0f},
-        {1.0f, 1.0f},
-        {-1.0f, 1.0f}
-    };
-   
+    glm::vec2 m_CollisionPoint = glm::vec2(1.0f, 0.0f);
+
     static Grafix::PolygonComponent s_Bullet;
 };

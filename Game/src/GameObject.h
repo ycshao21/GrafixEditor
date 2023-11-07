@@ -10,11 +10,11 @@ public:
     virtual void OnUpdate(float ts) {}
     virtual void OnRender() {}
 
-    void SetTranslation(const glm::vec2& translation) { m_Transform.Translation = translation; }
+    void SetPosition(const glm::vec2& position) { m_Transform.Translation = position; }
     void SetRotation(float rotation) { m_Transform.Rotation = rotation; }
     void SetScale(const glm::vec2& scale) { m_Transform.Scale = scale; }
 
-    glm::vec2 GetTranslation() const { return m_Transform.Translation; }
+    glm::vec2 GetPosition() const { return m_Transform.Translation; }
     float GetRotation() const { return m_Transform.Rotation; }
     glm::vec2 GetScale() const { return m_Transform.Scale; }
 

@@ -2,13 +2,14 @@
 
 #include "GameObjects/Player.h"
 #include "GameObjects/Bullet.h"
-#include "GameObjects/Rock.h"
+#include "GameObjects/Seamount.h"
 #include "GameObjects/Fish.h"
 
 class Level final
 {
+    using SeamountPair = std::pair<Seamount, Seamount>;
 public:
-    void OnAttach();
+    void Init();
     void OnUpdate(float ts);
     void OnRender();
     void OnDetach();
@@ -24,8 +25,8 @@ public:
 private:
     // Generation
     void GenerateBullet();
-    void GenerateRock();
-    void GenerateFish();
+    void GenerateSeamount(int index, float x);
+    void GenerateFish(int index, float x);
 
     // Collision detection
     bool IsPlayerDead();
@@ -33,7 +34,6 @@ private:
 
     ////bool IsMonsterKilled();
     void RenderWalls();
-    void RenderRocks();
 private:
     float m_Time = 0.0f;
     uint64_t m_Score = 0;
@@ -43,7 +43,13 @@ private:
     Bullet m_Bullet;
 
     std::vector<Fish> m_Fishes;
-    std::vector<Rock> m_Rocks;
+    int m_IndexOfFirstFish = 0;
+
+    std::vector<SeamountPair> m_Seamounts;
+    const float m_SeamountGap = 520.0f;
+    int m_IndexOfNextSeamount = 0;
+    int m_IndexOfSeamountToGen = 0;
+    float m_SeamountGenDetectX = 2.0f * m_SeamountGap;
 
     float m_WallThickness = 400.0f;
     float m_WallHeightOffset = 325.0f;

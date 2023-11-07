@@ -4,19 +4,19 @@ Grafix::PolygonComponent Bullet::s_Bullet;
 
 Bullet::Bullet()
 {
-    m_Transform.Scale = { 10.0f, 5.0f };
+    m_Transform.Scale = { 11.0f, 4.0f };
 }
 
 void Bullet::Init()
 {
     s_Bullet.Vertices = {
-        {-1.0f, -1.0f},
-        {0.3f, -1.0f},
-        {1.0f, 0.0f},
-        {0.3f, 1.0f},
-        {-1.0f, 1.0f}
+        { -1.0f, -1.0f },
+        {  0.3f, -1.0f },
+        {  1.0f,  0.0f },
+        {  0.3f,  1.0f },
+        { -1.0f,  1.0f }
     };
-    s_Bullet.Color = glm::vec3(0.8f);
+    s_Bullet.Color = { 0.724, 0.9f, 0.881f };
 }
 
 void Bullet::OnUpdate(float ts)
@@ -30,9 +30,9 @@ void Bullet::OnRender()
     Grafix::Renderer::DrawPolygon(m_Transform, s_Bullet);
 }
 
-std::vector<glm::vec2> Bullet::GetCollisionPoints() const
+glm::vec2 Bullet::GetCollisionPoint() const
 {
-    return Grafix::Math::Transform(m_Transform.GetTransformMatrix(), m_CollisionPoints);
+    return Grafix::Math::Transform(m_Transform.GetTransformMatrix(), m_CollisionPoint);
 }
 
 void Bullet::Activate(glm::vec2 position, float degree)

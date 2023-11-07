@@ -1,7 +1,7 @@
 #pragma once
 #include "../GameObject.h"
 
-class Rock final : public GameObject
+class Seamount final : public GameObject
 {
 public:
 	static void Init();
@@ -10,5 +10,5 @@ public:
 
 	std::vector<glm::vec2> GetCollisionPoints() const;
 private:
-    static Grafix::PolygonComponent s_Rock;
+    static Grafix::PolygonComponent s_Seamount;
 };

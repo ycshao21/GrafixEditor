@@ -29,16 +29,18 @@ private:
     ParticleSystem m_BubbleGenerator;
 
     // Bullets
-    int m_BulletCount;
+    int m_BulletCount = 3;
 
     // Collision
     std::vector<glm::vec2> m_CollisionPoints = {
-        {0.85f,0.3f},
-        {0.0f, 0.3f},
-        {-0.9f,0.3f},
-        {-0.9f,-0.3f},
-		{0.0f,-0.3f},
-        {0.85f,-0.3f}
+        { 0.87f,  0.3f },
+        {  0.4f,  0.5f },
+        { -0.4f,  0.5f },
+        { -0.9f,  0.5f },
+        { -0.9f, -0.5f },
+        { -0.4f, -0.5f },
+        {  0.4f, -0.5f },
+        { 0.87f, -0.3f }
     };
 
     // Shapes

@@ -4,6 +4,12 @@
 
 Player::Player()
 {
+    // Submarine
+    {
+        m_Transform.Scale = glm::vec2(60.0f);
+        Reset();
+    }
+
 	// Bubbles (particle system)
 	{
 		m_BubbleProps.Position = glm::vec2(0.0f);
@@ -53,8 +59,8 @@ Player::Player()
     // Submarine Windows
     {
         m_Windows[0].Center = { -0.1f, 0.0f };
-        m_Windows[1].Center = { 0.2f, 0.0f };
-        m_Windows[2].Center = { 0.5f, 0.0f };
+        m_Windows[1].Center = {  0.2f, 0.0f };
+        m_Windows[2].Center = {  0.5f, 0.0f };
 
         for (int i = 0; i < 3; i++)
         {
@@ -67,11 +73,8 @@ Player::Player()
 
 void Player::Reset()
 {
-	m_Transform.Translation = glm::vec2(0.0f, 50.0f);
-    m_Transform.Scale = glm::vec2(60.0f);
-
-	m_Velocity = glm::vec2(150.0f, 0.0f);
-
+	m_Transform.Translation = glm::vec2(-480.0f, 50.0f);
+	m_Velocity = glm::vec2(160.0f, 0.0f);
 	m_BulletCount = 3;
 }
 

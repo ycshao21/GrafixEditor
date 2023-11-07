@@ -18,16 +18,17 @@ static bool IsInPolygon(glm::vec2 point, const std::vector<glm::vec2>& polygon)
 	return numOfIntersections & 1;
 }
 
-
-void Level::OnAttach()
+void Level::Init()
 {
 	// Background color (ocean)
 	Grafix::Renderer::SetClearColor({ 0.140f, 0.307f, 0.389f });
 
-	Rock::Init();
+	Seamount::Init();
 	Fish::Init();
 	Bullet::Init();
 
+    m_Seamounts.resize(4);
+    m_Fishes.resize(5);
 	Reset();
 }
 
@@ -48,7 +49,7 @@ void Level::OnUpdate(float ts)
 		if (m_Player.HasBullets() && !m_Bullet.IsAlive())
 		{
             m_Player.UseBullet();
-            m_Bullet.Activate(m_Player.GetTranslation(), m_Player.GetRotation());
+            m_Bullet.Activate(m_Player.GetPosition(), m_Player.GetRotation());
 		}
 	}
 
@@ -57,6 +58,26 @@ void Level::OnUpdate(float ts)
 		BulletCollisionDetection();
         m_Bullet.OnUpdate(ts);
 	}
+
+	float playerX = m_Player.GetPosition().x;
+	if (playerX > m_Seamounts[m_IndexOfNextSeamount].first.GetPosition().x)
+	{
+        ++m_Score;
+        m_IndexOfNextSeamount = (m_IndexOfNextSeamount + 1) % m_Seamounts.size();
+    }
+
+	if (playerX > m_SeamountGenDetectX)
+	{
+        GenerateSeamount(m_IndexOfSeamountToGen, m_SeamountGenDetectX + 2.0f * m_SeamountGap);
+		m_IndexOfSeamountToGen = (m_IndexOfSeamountToGen + 1) % m_Seamounts.size();
+        m_SeamountGenDetectX += m_SeamountGap;
+	}
+
+	if (playerX > m_Fishes[m_IndexOfFirstFish].GetPosition().x + 500.0f)
+	{
+		GenerateFish(m_IndexOfFirstFish, playerX + Grafix::Random::GenerateFloat(800.0f, 1300.0f));
+        m_IndexOfFirstFish = (m_IndexOfFirstFish + 1) % m_Fishes.size();
+    }
 	
 	for (auto& fish : m_Fishes)
 		fish.OnUpdate(ts);
@@ -68,8 +89,11 @@ void Level::OnRender()
 		fish.OnRender();
 
 	// Player
-	for (auto& rock : m_Rocks)
-		rock.OnRender();
+	for (auto& [bottomSeamount, topSeamount] : m_Seamounts)
+	{
+		topSeamount.OnRender();
+		bottomSeamount.OnRender();
+	}
 
 	RenderWalls();
 
@@ -90,10 +114,21 @@ void Level::Reset()
 	m_GameOver = false;
 
 	m_Player.Reset();
+    
+	m_IndexOfNextSeamount = 0;
+	m_IndexOfSeamountToGen = 0;
+    m_SeamountGenDetectX = 2.0f * m_SeamountGap;
+	for (int i = 0; i < m_Seamounts.size(); ++i)
+		GenerateSeamount(i, i * m_SeamountGap);
 
-	// TEMP
-	GenerateRock();
-	GenerateFish();
+    m_IndexOfFirstFish = 0;
+	float lastFishX = -700.0f;
+	for (int i = 0; i < m_Fishes.size(); ++i)
+	{
+		float currentFishX = lastFishX + Grafix::Random::GenerateFloat(100.0f, 500.0f);
+        GenerateFish(i, currentFishX);
+		lastFishX = currentFishX;
+	}
 }
 
 void Level::GenerateBullet()
@@ -101,103 +136,84 @@ void Level::GenerateBullet()
 	// TODO: Generate bullet randomly
 }
 
-void Level::GenerateRock()
+void Level::GenerateSeamount(int index, float x)
 {
-	// TEMP: To generate rocks randomly and call it in OnUpdate()
+    float center = Grafix::Random::GenerateFloat(-190.0f, 190.0f);
+    float verticalGap = Grafix::Random::GenerateFloat(70.0f, 130.0f);
 
-    m_Rocks.resize(20);
-    float gap = 580.0f;
-    float startX = 950.0f;
+    float bottomSeamountHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
+    float topSeamountHeight = 2.0f * m_WallHeightOffset - bottomSeamountHeight - verticalGap;
 
-    for (int i = 0; i < m_Rocks.size(); i += 2)
-    {
-        float center = Grafix::Random::GenerateFloat(-190.0f, 190.0f);
-        float verticalGap = Grafix::Random::GenerateFloat(90.0f, 130.0f);
+    GF_INFO("New Seamount: x = {0}", x);
 
-		GF_INFO("center: {0}, gap: {1}", center, verticalGap);
+    auto& [bottomSeamount, topSeamount] = m_Seamounts[index];
+	constexpr float seamountWidth = 290.0f;
 
-        Rock& bottomRock = m_Rocks[i];
-        float bottomRockHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
-        bottomRock.SetTranslation({ startX , -m_WallHeightOffset - 5.0f });
-        bottomRock.SetScale({ 330.0f, bottomRockHeight });
+    bottomSeamount.SetPosition({ x, -m_WallHeightOffset - 5.0f });
+    bottomSeamount.SetScale({ seamountWidth, bottomSeamountHeight });
 
-        Rock& topRock = m_Rocks[i + 1];
-        float topRockHeight = 2.0f * m_WallHeightOffset - bottomRockHeight - verticalGap;
-        topRock.SetTranslation({ startX , m_WallHeightOffset + 5.0f });
-        topRock.SetRotation(180.0f);
-        topRock.SetScale({ 330.0f, topRockHeight });
-
-        startX += gap;
-    }
+    topSeamount.SetPosition({ x, m_WallHeightOffset + 5.0f });
+    topSeamount.SetRotation(180.0f);
+    topSeamount.SetScale({ seamountWidth, topSeamountHeight });
 }
 
-void Level::GenerateFish()
+void Level::GenerateFish(int index, float x)
 {
-    m_Fishes.resize(10);
-    float startX = -700.0f;
+	Fish& fish = m_Fishes[index];
 
-    for (auto& fish: m_Fishes)
-    {
-		float scale = Grafix::Random::GenerateFloat(10.0f, 35.0f);
+    fish.SetPosition({ x, Grafix::Random::GenerateFloat(-300.0f, 300.0f)});
 
-        fish.SetTranslation({ startX , Grafix::Random::GenerateFloat(-300.0f, 300.0f) });
-		fish.SetScale(glm::vec2(scale));
-
-        float gap = Grafix::Random::GenerateFloat(100.0f, 600.0f);
-        startX += gap;
-    }
+    float scale = Grafix::Random::GenerateFloat(12.0f, 25.0f);
+    fish.SetScale(glm::vec2(scale));
 }
 
 bool Level::IsPlayerDead()
 {
 	// Wall collision
-
 	for (auto& v : m_Player.GetCollisionPoints())
 	{
 		if (std::abs(v.y) > m_WallHeightOffset + 3.0f)
 			return true;
 	}
 
-	// Rock collision
-	for (auto& rock : m_Rocks)
-	{
-		for (auto v : m_Player.GetCollisionPoints())
-		{
-			if (IsInPolygon(v, rock.GetCollisionPoints()))
-				return true;
-		}
-	}
+	// Seamount collision
+    for (auto v : m_Player.GetCollisionPoints())
+    {
+        auto& [bottomSeamount, topSeamount] = m_Seamounts[m_IndexOfNextSeamount];
+        if (IsInPolygon(v, topSeamount.GetCollisionPoints()) || IsInPolygon(v, bottomSeamount.GetCollisionPoints()))
+            return true;
+    }
 	return false;
 }
 
 void Level::BulletCollisionDetection()
 {
-    for (auto& v : m_Bullet.GetCollisionPoints())
+	glm::vec2 cp = m_Bullet.GetCollisionPoint();
+
+    if (std::abs(cp.y) > m_WallHeightOffset)
     {
-        if (std::abs(v.y) > m_WallHeightOffset)
+        m_Bullet.Deactivate();
+        return;
+    }
+
+    for (auto& rock : m_Seamounts)
+    {
+        auto& [bottomSeamount, topSeamount] = rock;
+        if (IsInPolygon(cp, bottomSeamount.GetCollisionPoints()) || IsInPolygon(cp, topSeamount.GetCollisionPoints()))
         {
             m_Bullet.Deactivate();
             return;
         }
-
-        for (auto& rock : m_Rocks)
-        {
-            if (IsInPolygon(v, rock.GetCollisionPoints()))
-            {
-                m_Bullet.Deactivate();
-                return;
-            }
-		}
-   }
+    }
 }
 
 void Level::RenderWalls()
 {
 	std::vector<glm::vec2> wallVertices = {
-		{-0.5f, -0.5f},
-		{0.5f, -0.5f},
-		{0.5f, 0.5f},
-		{-0.5f, 0.5f}
+		{ -0.5f, -0.5f },
+		{  0.5f, -0.5f },
+		{  0.5f,  0.5f },
+		{ -0.5f,  0.5f }
 	};
     glm::vec3 wallColor = { 0.159f, 0.109f, 0.063f };
 
@@ -217,8 +233,4 @@ void Level::RenderWalls()
 		floorTransform.Scale = { 1800.0f,  m_WallThickness };
 		Grafix::Renderer::DrawPolygon(floorTransform, wallVertices, wallColor);
 	}
-}
-
-void Level::RenderRocks()
-{
 }
