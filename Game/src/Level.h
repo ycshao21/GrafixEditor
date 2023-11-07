@@ -4,6 +4,8 @@
 #include "GameObjects/Bullet.h"
 #include "GameObjects/Seamount.h"
 #include "GameObjects/Fish.h"
+#include "GameObjects/Medusozoa.h"
+#include "GameObjects/shark.h"
 #include "GameObjects/Coin.h"
 #include "GameObjects/BulletItem.h"
 
@@ -32,6 +34,8 @@ private:
 
     ////bool IsMonsterKilled();
 
+    void GenerateMedusozoa();
+    void GenerateShark(float x,float y);
     // Collision detection
     bool IsOutOfScreen(GameObject& gameobject);
     bool IsItemCollected(GameObject& gameobject);
@@ -45,6 +49,8 @@ private:
 
     Player m_Player;
     Bullet m_Bullet;
+    Shark m_Shark;
+    Medusozoa m_Medusozoa;
 
     std::vector<SeamountPair> m_Seamounts;
     const float m_SeamountGap = 520.0f;
