@@ -1,17 +1,17 @@
 #include "Level.h"
 #include <random>
 
-static bool IsInPolygon(glm::vec2 point, const std::vector<glm::vec2>& polygon) 
-{ 
+static bool IsInPolygon(glm::vec2 point, const std::vector<glm::vec2>& polygon)
+{
 	int numOfIntersections = 0;
 
-	for (int i = 0; i < polygon.size(); i++) 
+	for (int i = 0; i < polygon.size(); i++)
 	{
 		auto& p1 = polygon[i];
 		auto& p2 = polygon[(i + 1) % polygon.size()];
 
-		if ((p1.y < point.y && p2.y >= point.y) || (p2.y < point.y && p1.y >= point.y)) 
-			if (p1.x + (point.y - p1.y) / (p2.y - p1.y) * (p2.x - p1.x) < point.x) 
+		if ((p1.y < point.y && p2.y >= point.y) || (p2.y < point.y && p1.y >= point.y))
+			if (p1.x + (point.y - p1.y) / (p2.y - p1.y) * (p2.x - p1.x) < point.x)
 				++numOfIntersections;
 	}
 
@@ -49,31 +49,31 @@ void Level::OnUpdate(float ts)
 	{
 		if (m_Player.HasBullets() && !m_Bullet.IsActive())
 		{
-            m_Player.UseBullet();
-            m_Bullet.Activate(m_Player.GetPosition(), m_Player.GetRotation());
+			m_Player.UseBullet();
+			m_Bullet.Activate(m_Player.GetPosition(), m_Player.GetRotation());
 		}
 	}
 
 	if (m_Bullet.IsActive())
 	{
 		BulletCollisionDetection();
-        m_Bullet.OnUpdate(ts);
+		m_Bullet.OnUpdate(ts);
 	}
 
 	// Update score
 	float playerX = m_Player.GetPosition().x;
 	if (playerX > m_Seamounts[m_IndexOfNextSeamount].first.GetPosition().x)
 	{
-        ++m_Score;
-        m_IndexOfNextSeamount = (m_IndexOfNextSeamount + 1) % m_Seamounts.size();
-    }
+		++m_Score;
+		m_IndexOfNextSeamount = (m_IndexOfNextSeamount + 1) % m_Seamounts.size();
+	}
 
 	// Generate new seamount
 	if (playerX > m_SeamountGenDetectX)
 	{
-        GenerateSeamount(m_IndexOfSeamountToGen, m_SeamountGenDetectX + 2.0f * m_SeamountGap);
+		GenerateSeamount(m_IndexOfSeamountToGen, m_SeamountGenDetectX + 2.0f * m_SeamountGap);
 		m_IndexOfSeamountToGen = (m_IndexOfSeamountToGen + 1) % m_Seamounts.size();
-        m_SeamountGenDetectX += m_SeamountGap;
+		m_SeamountGenDetectX += m_SeamountGap;
 	}
 
 	// Generate new fish
@@ -105,13 +105,29 @@ void Level::OnUpdate(float ts)
         GenerateBulletItem();
     }
 
-	
+	if (m_Shark.IsAlive() && IsOutOfScreen(m_Shark))
+		m_Shark.Hit();
+
+	if (m_Medusozoa.IsAlive() && IsOutOfScreen(m_Medusozoa))
+		m_Medusozoa.Hit();
+
 	for (auto& fish : m_Fishes)
 		fish.OnUpdate(ts);
+
+	if (m_Medusozoa.IsAlive())
+		m_Medusozoa.OnUpdate(ts);
+	else
+		GenerateMedusozoa();
 }
 
 void Level::OnRender()
 {
+	if (m_Shark.IsAlive())
+		m_Shark.OnRender();
+
+	if (m_Medusozoa.IsAlive())
+		m_Medusozoa.OnRender();
+
 	for (auto& fish : m_Fishes)
 		fish.OnRender();
 
@@ -170,6 +186,9 @@ void Level::Reset()
 	// Items
     GenerateCoin();
     GenerateBulletItem();
+	GenerateMedusozoa();
+
+	m_Shark.Hit();
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -178,23 +197,26 @@ void Level::Reset()
 
 void Level::GenerateSeamount(int index, float x)
 {
-    float center = Grafix::Random::GenerateFloat(-190.0f, 190.0f);
-    float verticalGap = Grafix::Random::GenerateFloat(70.0f, 130.0f);
+	float center = Grafix::Random::GenerateFloat(-190.0f, 190.0f);
+	float verticalGap = Grafix::Random::GenerateFloat(70.0f, 130.0f);
 
-    float bottomSeamountHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
-    float topSeamountHeight = 2.0f * m_WallHeightOffset - bottomSeamountHeight - verticalGap;
+	float bottomSeamountHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
+	float topSeamountHeight = 2.0f * m_WallHeightOffset - bottomSeamountHeight - verticalGap;
 
-    GF_INFO("New Seamount: x = {0}", x);
+	GF_INFO("New Seamount: x = {0}", x);
 
-    auto& [bottomSeamount, topSeamount] = m_Seamounts[index];
+	auto& [bottomSeamount, topSeamount] = m_Seamounts[index];
 	constexpr float seamountWidth = 290.0f;
 
-    bottomSeamount.SetPosition({ x, -m_WallHeightOffset - 5.0f });
-    bottomSeamount.SetScale({ seamountWidth, bottomSeamountHeight });
+	bottomSeamount.SetPosition({ x, -m_WallHeightOffset - 5.0f });
+	bottomSeamount.SetScale({ seamountWidth, bottomSeamountHeight });
 
-    topSeamount.SetPosition({ x, m_WallHeightOffset + 5.0f });
-    topSeamount.SetRotation(180.0f);
-    topSeamount.SetScale({ seamountWidth, topSeamountHeight });
+	topSeamount.SetPosition({ x, m_WallHeightOffset + 5.0f });
+	topSeamount.SetRotation(180.0f);
+	topSeamount.SetScale({ seamountWidth, topSeamountHeight });
+
+	if (!m_Shark.IsAlive())
+		GenerateShark(m_Seamounts[m_IndexOfNextSeamount+Grafix::Random::GenerateUint32(1,3)].first.GetPosition().x, center);
 }
 
 void Level::GenerateFish(int index, float x)
@@ -245,6 +267,26 @@ bool Level::IsItemCollected(GameObject& gameobject)
 	return glm::distance(m_Player.GetPosition(), gameobject.GetPosition()) < gameobject.GetScale().x + 30.0f;
 }
 
+void Level::GenerateMedusozoa()
+{
+	float x = m_Seamounts[m_IndexOfNextSeamount].first.GetPosition().x 
+		+ m_SeamountGap * (0.5f + (float)Grafix::Random::GenerateUint32(1, 5));
+	m_Medusozoa.Reset();
+	m_Medusozoa.SetPosition({ x , Grafix::Random::GenerateFloat(-100.0f, 100.0f) });
+
+	float scale = Grafix::Random::GenerateFloat(40.0f, 70.0f);
+	m_Medusozoa.SetScale(glm::vec2(scale));
+}
+
+void Level::GenerateShark(float x, float y)
+{
+	m_Shark.ReSet();
+	m_Shark.SetPosition({ x , y });
+
+	m_Shark.SetScale(glm::vec2(60.f));
+}
+
+
 bool Level::IsPlayerDead()
 {
 	// Wall collision
@@ -255,12 +297,28 @@ bool Level::IsPlayerDead()
 	}
 
 	// Seamount collision
-    for (auto v : m_Player.GetCollisionPoints())
-    {
-        auto& [bottomSeamount, topSeamount] = m_Seamounts[m_IndexOfNextSeamount];
-        if (IsInPolygon(v, topSeamount.GetCollisionPoints()) || IsInPolygon(v, bottomSeamount.GetCollisionPoints()))
-            return true;
-    }
+	for (auto v : m_Player.GetCollisionPoints())
+	{
+		auto& [bottomSeamount, topSeamount] = m_Seamounts[m_IndexOfNextSeamount];
+		if (IsInPolygon(v, topSeamount.GetCollisionPoints()) || IsInPolygon(v, bottomSeamount.GetCollisionPoints()))
+			return true;
+	}
+
+	//animal collison
+	if (m_Shark.IsAlive())
+		for (auto v : m_Player.GetCollisionPoints())
+		{
+			if (IsInPolygon(v, m_Shark.GetCollisionPoints()))
+				return true;
+		}
+
+	if (m_Medusozoa.IsAlive())
+		for (auto v : m_Player.GetCollisionPoints())
+		{
+			if (IsInPolygon(v, m_Medusozoa.GetCollisionPoints()))
+				return true;
+		}
+
 	return false;
 }
 
@@ -268,21 +326,39 @@ void Level::BulletCollisionDetection()
 {
 	glm::vec2 cp = m_Bullet.GetCollisionPoint();
 
-    if (std::abs(cp.y) > m_WallHeightOffset)
-    {
-        m_Bullet.Deactivate();
-        return;
-    }
+	if (std::abs(cp.y) > m_WallHeightOffset)
+	{
+		m_Bullet.Deactivate();
+		return;
+	}
 
-    for (auto& rock : m_Seamounts)
-    {
-        auto& [bottomSeamount, topSeamount] = rock;
-        if (IsInPolygon(cp, bottomSeamount.GetCollisionPoints()) || IsInPolygon(cp, topSeamount.GetCollisionPoints()))
-        {
-            m_Bullet.Deactivate();
-            return;
-        }
-    }
+	for (auto& rock : m_Seamounts)
+	{
+		auto& [bottomSeamount, topSeamount] = rock;
+		if (IsInPolygon(cp, bottomSeamount.GetCollisionPoints()) || IsInPolygon(cp, topSeamount.GetCollisionPoints()))
+		{
+			m_Bullet.Deactivate();
+			return;
+		}
+	}
+
+	if (m_Shark.IsAlive())
+		if (IsInPolygon(cp, m_Shark.GetCollisionPoints()))
+		{
+			m_Bullet.Deactivate();
+			m_Shark.Hit();
+			m_Score += 10;
+			return;
+		}
+
+	if (m_Medusozoa.IsAlive())
+		if (IsInPolygon(cp, m_Medusozoa.GetCollisionPoints()))
+		{
+			m_Bullet.Deactivate();
+			m_Medusozoa.Hit();
+			m_Score += 5;
+			return;
+		}
 }
 
 void Level::RenderWalls()
@@ -293,7 +369,7 @@ void Level::RenderWalls()
 		{  0.5f,  0.5f },
 		{ -0.5f,  0.5f }
 	};
-    glm::vec3 wallColor = { 0.159f, 0.109f, 0.063f };
+	glm::vec3 wallColor = { 0.159f, 0.109f, 0.063f };
 
     // Ceiling
     Grafix::TransformComponent ceilingTransform;
