@@ -24,7 +24,6 @@ public:
     virtual void OnDetach() override;
 private:
     bool OnKeyPressed(Grafix::KeyPressedEvent& e);
-    bool OnMouseButtonPressed(Grafix::MouseButtonPressedEvent& e);
 
     ////bool IsMouseInCanvas() const;
     ////void UpdateMousePos();

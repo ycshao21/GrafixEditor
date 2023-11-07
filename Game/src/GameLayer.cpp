@@ -15,10 +15,8 @@ void GameLayer::OnAttach()
 
 void GameLayer::OnUpdate(float ts)
 {
-    ////UpdateMousePos();
-
-    auto& playerTransform = m_Level->GetPlayer().GetTransform();
-    m_Camera->SetPosition({ playerTransform.Translation.x + 200.0f, playerTransform.Translation.y });
+    auto playerPos = m_Level->GetPlayer().GetPosition();
+    m_Camera->SetPosition({ playerPos.x + 250.0f, playerPos.y });
 
     if (m_Level->IsGameOver())
     {
@@ -83,7 +81,6 @@ void GameLayer::OnEvent(Grafix::Event& e)
 {
     Grafix::EventDispatcher dispatcher(e);
     dispatcher.Dispatch<Grafix::KeyPressedEvent>(BIND_EVENT_FN(GameLayer::OnKeyPressed));
-    dispatcher.Dispatch<Grafix::MouseButtonPressedEvent>(BIND_EVENT_FN(GameLayer::OnMouseButtonPressed));
 }
 
 void GameLayer::OnDetach()
@@ -101,37 +98,15 @@ bool GameLayer::OnKeyPressed(Grafix::KeyPressedEvent& e)
     if (e.IsRepeat())
         return false;
 
-    // TODO: Set key controls here
+    if (e.GetKey() == Grafix::Key::Up)
+    {
+        if (m_GameState == GameState::GameOver)
+            m_Level->Reset();
+
+        m_GameState = GameState::Playing;
+    }
     return false;
 }
-
-bool GameLayer::OnMouseButtonPressed(Grafix::MouseButtonPressedEvent& e)
-{
-    // TODO: Set mouse controls here
-
-    return false;
-}
-////
-////void GameLayer::UpdateMousePos()
-////{
-////    auto [mx, my] = ImGui::GetMousePos();
-////    glm::vec2 newMousePosInCanvas = {
-////        mx - m_CanvasBounds[0].x,
-////        m_CanvasBounds[1].y - my
-////    };
-////
-////    m_MousePositionDelta = newMousePosInCanvas - m_MousePosInCanvas;
-////    m_MousePosInCanvas = newMousePosInCanvas;
-////
-////    glm::mat3 translationMatrix = m_Camera->GetTranslationMatrix();
-////    m_MousePosInWorld = Grafix::Math::Transform(translationMatrix, m_MousePosInCanvas);
-////}
-////
-////bool GameLayer::IsMouseInCanvas() const
-////{
-////    return m_MousePosInCanvas.x >= 0.0f && m_MousePosInCanvas.x < (float)m_CanvasWidth
-////        && m_MousePosInCanvas.y >= 0.0f && m_MousePosInCanvas.y < (float)m_CanvasHeight;
-////}
 
 // -----------------------------------------------------------------
 // --------------------------- UI Panels ---------------------------

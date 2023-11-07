@@ -4,6 +4,8 @@
 #include "GameObjects/Bullet.h"
 #include "GameObjects/Seamount.h"
 #include "GameObjects/Fish.h"
+#include "GameObjects/Coin.h"
+#include "GameObjects/BulletItem.h"
 
 class Level final
 {
@@ -23,16 +25,19 @@ public:
 
     void Reset();
 private:
-    // Generation
-    void GenerateBullet();
     void GenerateSeamount(int index, float x);
     void GenerateFish(int index, float x);
+    void GenerateCoin();
+    void GenerateBulletItem();
+
+    ////bool IsMonsterKilled();
 
     // Collision detection
+    bool IsOutOfScreen(GameObject& gameobject);
+    bool IsItemCollected(GameObject& gameobject);
     bool IsPlayerDead();
     void BulletCollisionDetection();
 
-    ////bool IsMonsterKilled();
     void RenderWalls();
 private:
     float m_Time = 0.0f;
@@ -42,14 +47,19 @@ private:
     Player m_Player;
     Bullet m_Bullet;
 
-    std::vector<Fish> m_Fishes;
-    int m_IndexOfFirstFish = 0;
-
     std::vector<SeamountPair> m_Seamounts;
     const float m_SeamountGap = 520.0f;
     int m_IndexOfNextSeamount = 0;
     int m_IndexOfSeamountToGen = 0;
     float m_SeamountGenDetectX = 2.0f * m_SeamountGap;
+
+    // Items
+    Coin m_Coin;
+    BulletItem m_BulletItem;
+
+
+    std::vector<Fish> m_Fishes;
+    int m_IndexOfFirstFish = 0;
 
     float m_WallThickness = 400.0f;
     float m_WallHeightOffset = 325.0f;

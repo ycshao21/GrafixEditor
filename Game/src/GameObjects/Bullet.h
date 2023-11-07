@@ -13,7 +13,7 @@ public:
 
     glm::vec2 GetCollisionPoint() const;
 
-    bool IsAlive() const { return m_LifeRemaining > 0.0f; }
+    bool IsActive() const { return m_LifeRemaining > 0.0f; }
     void Activate(glm::vec2 position, float degree);
     void Deactivate();
 private:

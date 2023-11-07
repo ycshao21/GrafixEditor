@@ -29,6 +29,7 @@ void Level::Init()
 
     m_Seamounts.resize(4);
     m_Fishes.resize(5);
+
 	Reset();
 }
 
@@ -46,19 +47,20 @@ void Level::OnUpdate(float ts)
 
 	if (Grafix::Input::IsKeyPressed(Grafix::Key::S))
 	{
-		if (m_Player.HasBullets() && !m_Bullet.IsAlive())
+		if (m_Player.HasBullets() && !m_Bullet.IsActive())
 		{
             m_Player.UseBullet();
             m_Bullet.Activate(m_Player.GetPosition(), m_Player.GetRotation());
 		}
 	}
 
-	if (m_Bullet.IsAlive())
+	if (m_Bullet.IsActive())
 	{
 		BulletCollisionDetection();
         m_Bullet.OnUpdate(ts);
 	}
 
+	// Update score
 	float playerX = m_Player.GetPosition().x;
 	if (playerX > m_Seamounts[m_IndexOfNextSeamount].first.GetPosition().x)
 	{
@@ -66,6 +68,7 @@ void Level::OnUpdate(float ts)
         m_IndexOfNextSeamount = (m_IndexOfNextSeamount + 1) % m_Seamounts.size();
     }
 
+	// Generate new seamount
 	if (playerX > m_SeamountGenDetectX)
 	{
         GenerateSeamount(m_IndexOfSeamountToGen, m_SeamountGenDetectX + 2.0f * m_SeamountGap);
@@ -73,11 +76,35 @@ void Level::OnUpdate(float ts)
         m_SeamountGenDetectX += m_SeamountGap;
 	}
 
-	if (playerX > m_Fishes[m_IndexOfFirstFish].GetPosition().x + 500.0f)
+	// Generate new fish
+	if (IsOutOfScreen(m_Fishes[m_IndexOfFirstFish]))
 	{
-		GenerateFish(m_IndexOfFirstFish, playerX + Grafix::Random::GenerateFloat(800.0f, 1300.0f));
+		GenerateFish(m_IndexOfFirstFish, playerX + Grafix::Random::GenerateFloat(1000.0f, 1500.0f));
         m_IndexOfFirstFish = (m_IndexOfFirstFish + 1) % m_Fishes.size();
     }
+
+	// Coin
+	if (IsItemCollected(m_Coin))
+	{
+        m_Score += 5;
+		GenerateCoin();
+	}
+	else if (IsOutOfScreen(m_Coin))
+	{
+		GenerateCoin();
+	}
+
+	// Bullet item
+	if (IsItemCollected(m_BulletItem))
+	{
+		m_Player.AddBullet();
+		GenerateBulletItem();
+	}
+	else if(IsOutOfScreen(m_BulletItem))
+    {
+        GenerateBulletItem();
+    }
+
 	
 	for (auto& fish : m_Fishes)
 		fish.OnUpdate(ts);
@@ -97,10 +124,14 @@ void Level::OnRender()
 
 	RenderWalls();
 
-	if(m_Bullet.IsAlive())
-        m_Bullet.OnRender();
+	// Items
+    m_Coin.OnRender();
+	m_BulletItem.OnRender();
 
 	m_Player.OnRender();
+
+	if(m_Bullet.IsActive())
+        m_Bullet.OnRender();
 }
 
 void Level::OnDetach()
@@ -115,26 +146,35 @@ void Level::Reset()
 
 	m_Player.Reset();
     
-	m_IndexOfNextSeamount = 0;
-	m_IndexOfSeamountToGen = 0;
-    m_SeamountGenDetectX = 2.0f * m_SeamountGap;
-	for (int i = 0; i < m_Seamounts.size(); ++i)
-		GenerateSeamount(i, i * m_SeamountGap);
-
-    m_IndexOfFirstFish = 0;
-	float lastFishX = -700.0f;
-	for (int i = 0; i < m_Fishes.size(); ++i)
+	// Seamount
 	{
-		float currentFishX = lastFishX + Grafix::Random::GenerateFloat(100.0f, 500.0f);
-        GenerateFish(i, currentFishX);
-		lastFishX = currentFishX;
+        m_IndexOfNextSeamount = 0;
+        m_IndexOfSeamountToGen = 0;
+        m_SeamountGenDetectX = 2.0f * m_SeamountGap;
+        for (int i = 0; i < m_Seamounts.size(); ++i)
+            GenerateSeamount(i, i * m_SeamountGap);
 	}
+
+	// Fish
+	{
+        m_IndexOfFirstFish = 0;
+        float lastFishX = -700.0f;
+        for (int i = 0; i < m_Fishes.size(); ++i)
+        {
+            float currentFishX = lastFishX + Grafix::Random::GenerateFloat(100.0f, 500.0f);
+            GenerateFish(i, currentFishX);
+            lastFishX = currentFishX;
+        }
+	}
+	
+	// Items
+    GenerateCoin();
+    GenerateBulletItem();
 }
 
-void Level::GenerateBullet()
-{
-	// TODO: Generate bullet randomly
-}
+// ----------------------------------------------------------------------------------------------------------------------------
+// Generate GameObjects
+// ----------------------------------------------------------------------------------------------------------------------------
 
 void Level::GenerateSeamount(int index, float x)
 {
@@ -160,11 +200,49 @@ void Level::GenerateSeamount(int index, float x)
 void Level::GenerateFish(int index, float x)
 {
 	Fish& fish = m_Fishes[index];
-
     fish.SetPosition({ x, Grafix::Random::GenerateFloat(-300.0f, 300.0f)});
 
-    float scale = Grafix::Random::GenerateFloat(12.0f, 25.0f);
+    float scale = Grafix::Random::GenerateFloat(16.0f, 26.0f);
     fish.SetScale(glm::vec2(scale));
+}
+
+void Level::GenerateCoin()
+{
+	float random = (float)Grafix::Random::GenerateUint32(1, 3);
+	float x = m_Seamounts[m_IndexOfNextSeamount].first.GetPosition().x + m_SeamountGap * (0.5f + (float)random);
+	while (std::abs(x - m_BulletItem.GetPosition().x) < 20.0f)
+	{
+        x += m_SeamountGap;
+	}
+
+	float y = Grafix::Random::GenerateFloat(-200.0f, 200.0f);
+    m_Coin.SetPosition({x, y});
+
+	GF_INFO("New Coin: ({0}, {1})", x, y);
+}
+
+void Level::GenerateBulletItem()
+{
+	float random = (float)Grafix::Random::GenerateUint32(4, 9);
+    float x = m_Seamounts[m_IndexOfNextSeamount].first.GetPosition().x + m_SeamountGap * (0.5f + (float)random);
+	while(glm::distance(x, m_BulletItem.GetPosition().x) < 20.0f)
+    {
+        x += m_SeamountGap;
+    }
+	float y = Grafix::Random::GenerateFloat(-200.0f, 200.0f);
+    m_BulletItem.SetPosition({x, y});
+
+	GF_INFO("New Bullet Item: ({0}, {1})", x, y);
+}
+
+bool Level::IsOutOfScreen(GameObject& object)
+{
+    return m_Player.GetPosition().x - object.GetPosition().x > 500.0f;
+}
+
+bool Level::IsItemCollected(GameObject& gameobject)
+{
+	return glm::distance(m_Player.GetPosition(), gameobject.GetPosition()) < gameobject.GetScale().x + 30.0f;
 }
 
 bool Level::IsPlayerDead()
@@ -217,20 +295,17 @@ void Level::RenderWalls()
 	};
     glm::vec3 wallColor = { 0.159f, 0.109f, 0.063f };
 
-	// Walls
-	{
-		// Ceiling
-		Grafix::TransformComponent ceilingTransform;
-		ceilingTransform.Pivot = { 0.0f, -0.5f };
-		ceilingTransform.Translation = { m_Player.GetTransform().Translation.x, m_WallHeightOffset };
-		ceilingTransform.Scale = { 1800.0f,  m_WallThickness };
-		Grafix::Renderer::DrawPolygon(ceilingTransform, wallVertices, wallColor);
+    // Ceiling
+    Grafix::TransformComponent ceilingTransform;
+    ceilingTransform.Pivot = { 0.0f, -0.5f };
+    ceilingTransform.Translation = { m_Player.GetPosition().x, m_WallHeightOffset };
+    ceilingTransform.Scale = { 1800.0f,  m_WallThickness };
+    Grafix::Renderer::DrawPolygon(ceilingTransform, wallVertices, wallColor);
 
-		// Floor
-		Grafix::TransformComponent floorTransform;
-		floorTransform.Pivot = { 0.0f, 0.5f };
-		floorTransform.Translation = { m_Player.GetTransform().Translation.x, -m_WallHeightOffset };
-		floorTransform.Scale = { 1800.0f,  m_WallThickness };
-		Grafix::Renderer::DrawPolygon(floorTransform, wallVertices, wallColor);
-	}
+    // Floor
+    Grafix::TransformComponent floorTransform;
+    floorTransform.Pivot = { 0.0f, 0.5f };
+    floorTransform.Translation = { m_Player.GetPosition().x, -m_WallHeightOffset };
+    floorTransform.Scale = { 1800.0f,  m_WallThickness };
+    Grafix::Renderer::DrawPolygon(floorTransform, wallVertices, wallColor);
 }

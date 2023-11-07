@@ -6,7 +6,14 @@ Player::Player()
 {
     // Submarine
     {
-        m_Transform.Scale = glm::vec2(60.0f);
+        m_Transform.Scale = glm::vec2(56.0f);
+
+        m_VisionLine.P0 = { 1.0f, 0.0f };
+        m_VisionLine.P1 = { 31.0f, 0.0f };
+        m_VisionLine.Color = glm::vec3(0.45f);
+        m_VisionLine.LineWidth = 2.0f;
+        m_VisionLine.LineStyle = Grafix::LineStyleType::Dotted;
+
         Reset();
     }
 
@@ -31,27 +38,27 @@ Player::Player()
     {
         // Submarine Body
         m_Body.Vertices = {
-            {0.95f, 0.0f},
-            {0.9f, 0.1f},
-            {0.85f, 0.2f},
-            {0.7f, 0.3f},
-            {0.4f, 0.3f},
-            {0.4f, 0.5f},
-            {0.0f, 0.5f},
-            {0.0f, 0.3f},
-            {-0.4f, 0.3f},
-            {-0.75f, 0.2f},
-            {-0.8f, 0.2f},
-            {-0.8f, 0.25f},
-            {-0.9f, 0.25f},
-            {-0.9f, -0.3f},
-            {-0.8f, -0.3f},
-            {-0.8f, -0.25f},
-            {-0.75f, -0.25f},
-            {-0.5f, -0.3f},
-            {0.7f, -0.3f},
-            {0.85f, -0.2f},
-            {0.9f, -0.1f}
+            { 0.95f, 0.0f },
+            { 0.9f, 0.1f },
+            { 0.85f, 0.2f },
+            { 0.7f, 0.3f },
+            { 0.4f, 0.3f },
+            { 0.4f, 0.5f },
+            { 0.0f, 0.5f },
+            { 0.0f, 0.3f },
+            { -0.4f, 0.3f },
+            { -0.75f, 0.2f },
+            { -0.8f, 0.2f },
+            { -0.8f, 0.25f },
+            { -0.9f, 0.25f },
+            { -0.9f, -0.3f },
+            { -0.8f, -0.3f },
+            { -0.8f, -0.25f },
+            { -0.75f, -0.25f },
+            { -0.5f, -0.3f },
+            { 0.7f, -0.3f },
+            { 0.85f, -0.2f },
+            { 0.9f, -0.1f }
         };
         m_Body.Color = glm::vec3(0.851f, 0.428f, 0.132f);
     }
@@ -80,6 +87,8 @@ void Player::Reset()
 
 void Player::OnUpdate(float ts)
 {
+    m_Velocity.x += 0.1 * ts;
+
     // Press up arrow to go up
     if (Grafix::Input::IsKeyPressed(Grafix::Key::Up))
     {
@@ -118,6 +127,9 @@ void Player::OnRender()
     // Draw windows
 	for (int i = 0; i < 3; i++)
 		Grafix::Renderer::DrawCircle(m_Transform, m_Windows[i]);
+
+    // Draw vision line
+    Grafix::Renderer::DrawLine(m_Transform, m_VisionLine);
 }
 
 std::vector<glm::vec2> Player::GetCollisionPoints() const

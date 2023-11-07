@@ -79,7 +79,7 @@ namespace Grafix
     struct CircleComponent final
     {
         glm::vec2 Center{ 450.0f, 500.0f };
-        float Radius = 0.0f;
+        float Radius = 1.0f;
 
         float LineWidth = 5.0f;
         LineStyleType LineStyle = LineStyleType::Solid;

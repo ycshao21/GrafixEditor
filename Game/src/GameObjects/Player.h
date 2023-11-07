@@ -18,6 +18,7 @@ public:
 
     // Bullets
     void UseBullet() { --m_BulletCount; }
+    void AddBullet() { ++m_BulletCount; }
     int GetBulletCount() const { return m_BulletCount; }
     bool HasBullets() const { return m_BulletCount > 0; }
 private:
@@ -42,6 +43,8 @@ private:
         {  0.4f, -0.5f },
         { 0.87f, -0.3f }
     };
+
+    Grafix::LineComponent m_VisionLine;
 
     // Shapes
     Grafix::PolygonComponent m_Body;
