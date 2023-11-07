@@ -87,8 +87,6 @@ void Player::Reset()
 
 void Player::OnUpdate(float ts)
 {
-    m_Velocity.x += 0.1 * ts;
-
     // Press up arrow to go up
     if (Grafix::Input::IsKeyPressed(Grafix::Key::Up))
     {

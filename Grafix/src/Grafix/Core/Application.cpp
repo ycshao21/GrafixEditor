@@ -208,6 +208,14 @@ void SetupRendererBackends()
     initInfo.CheckVkResultFn = CheckVkResult;
     ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
 
+    // Load font
+    ImFontConfig fontConfig;
+    fontConfig.FontDataOwnedByAtlas = false;
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* font = io.Fonts->AddFontFromFileTTF("../Grafix/assets/arialbd.ttf", 120.0f);
+    io.FontDefault = font;
+
     // Upload Fonts
     {
         // Use any command queue

@@ -35,8 +35,6 @@ void Level::Init()
 
 void Level::OnUpdate(float ts)
 {
-	m_Time += ts;
-
 	m_Player.OnUpdate(ts);
 
 	if (IsPlayerDead())
@@ -140,7 +138,6 @@ void Level::OnDetach()
 
 void Level::Reset()
 {
-	m_Time = 0.0f;
 	m_Score = 0;
 	m_GameOver = false;
 
@@ -179,7 +176,7 @@ void Level::Reset()
 void Level::GenerateSeamount(int index, float x)
 {
     float center = Grafix::Random::GenerateFloat(-190.0f, 190.0f);
-    float verticalGap = Grafix::Random::GenerateFloat(70.0f, 130.0f);
+    float verticalGap = Grafix::Random::GenerateFloat(80.0f, 130.0f);
 
     float bottomSeamountHeight = m_WallHeightOffset + center - verticalGap / 2.0f;
     float topSeamountHeight = 2.0f * m_WallHeightOffset - bottomSeamountHeight - verticalGap;

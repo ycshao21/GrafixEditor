@@ -40,7 +40,6 @@ private:
 
     void RenderWalls();
 private:
-    float m_Time = 0.0f;
     uint64_t m_Score = 0;
     bool m_GameOver = false;
 

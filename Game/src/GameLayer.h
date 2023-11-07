@@ -25,21 +25,16 @@ public:
 private:
     bool OnKeyPressed(Grafix::KeyPressedEvent& e);
 
-    ////bool IsMouseInCanvas() const;
-    ////void UpdateMousePos();
-
-    void UI_Canvas();
-    void UI_MenuBar();
     void UI_Info();
 private:
+    float m_Time = 0.0f;
     GameState m_GameState = GameState::Ready;
+
     std::unique_ptr<Level> m_Level = nullptr;
     std::unique_ptr<Grafix::Camera> m_Camera = nullptr;
 
     // Canvas
     uint32_t m_CanvasWidth = 1280, m_CanvasHeight = 720;
-    glm::vec2 m_CanvasBounds[2];
-    bool m_CanvasFocused = false, m_CanvasHovered = false;
 
     // Mouse
     glm::vec2 m_MousePosInCanvas{ 0.0f, 0.0f };

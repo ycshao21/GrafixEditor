@@ -15,14 +15,13 @@ void GameLayer::OnAttach()
 
 void GameLayer::OnUpdate(float ts)
 {
+	m_Time += ts;
+
     auto playerPos = m_Level->GetPlayer().GetPosition();
     m_Camera->SetPosition({ playerPos.x + 250.0f, playerPos.y });
 
     if (m_Level->IsGameOver())
-    {
         m_GameState = GameState::GameOver;
-        return;
-    }
 
     switch (m_GameState)
     {
@@ -43,7 +42,6 @@ void GameLayer::OnUIRender()
 {
     static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking;
-    windowFlags |= ImGuiWindowFlags_MenuBar;
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -70,11 +68,64 @@ void GameLayer::OnUIRender()
             ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), dockspaceFlags);
         }
 
-        UI_MenuBar();
-        UI_Info();
-        UI_Canvas();
+        // Viewport
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::Begin("Viewport");
+        if (m_CanvasWidth > 0 && m_CanvasWidth <= s_MaxViewportSize && m_CanvasHeight > 0 && m_CanvasHeight <= s_MaxViewportSize)
+        {
+            if (auto image = Grafix::Renderer::GetImage())
+            {
+                ImGui::Image(image->GetDescriptorSet(),
+                    { (float)image->GetWidth(), (float)image->GetHeight() },
+                    ImVec2(0, 1), ImVec2(1, 0)
+                );
+            }
+        }
+        ImGui::End();
+        ImGui::PopStyleVar();
+        ////UI_Info();
     }
     ImGui::End(); // DockSpace
+
+    ImVec2 pos = ImGui::GetWindowPos();
+    switch (m_GameState)
+    {
+        case GameState::Ready:
+        {
+            pos.x += m_CanvasWidth / 2.0f - 340.0f;
+            pos.y += 450.0f;
+            uint32_t white = Grafix::RGBToUint32(glm::vec3(0.9f));
+            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 70.0f, pos, white, "Press Space to start");
+            break;
+        }
+        case GameState::Playing:
+        {
+            uint32_t white = Grafix::RGBToUint32(glm::vec3(0.9f));
+
+            pos.x += m_CanvasWidth - 210.0f;
+            pos.y -= 30.0f;
+            std::string scoreStr = std::format("Score: {}", m_Level->GetScore());
+            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.0f, pos, white, scoreStr.c_str());
+
+            pos.y += 50.0f;
+            std::string bulletStr = std::format("Bullet: {}", m_Level->GetPlayer().GetBulletCount());
+            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 30.0f, pos, white, bulletStr.c_str());
+            break;
+        }
+        case GameState::GameOver:
+        {
+            pos.x += m_CanvasWidth / 2.0f - 340.0f;
+            pos.y += 190.0f;
+            uint32_t red = Grafix::RGBToUint32(glm::vec3(0.9f, 0.1f, 0.1f));
+            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 120.0f, pos, red, "Game Over");
+
+            pos.x += 160.0f;
+            pos.y += 150.0f;
+            std::string scoreStr = std::format("Your score: {}", m_Level->GetScore());
+            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 40.0f, pos, 0xffffffff, scoreStr.c_str());
+            break;
+        }
+    }
 }
 
 void GameLayer::OnEvent(Grafix::Event& e)
@@ -98,7 +149,7 @@ bool GameLayer::OnKeyPressed(Grafix::KeyPressedEvent& e)
     if (e.IsRepeat())
         return false;
 
-    if (e.GetKey() == Grafix::Key::Up)
+    if (e.GetKey() == Grafix::Key::Space)
     {
         if (m_GameState == GameState::GameOver)
             m_Level->Reset();
@@ -108,54 +159,6 @@ bool GameLayer::OnKeyPressed(Grafix::KeyPressedEvent& e)
     return false;
 }
 
-// -----------------------------------------------------------------
-// --------------------------- UI Panels ---------------------------
-// -----------------------------------------------------------------
-
-void GameLayer::UI_Canvas()
-{
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::Begin("Canvas");
-    {
-        ////ImVec2 canvasMinRegion = ImGui::GetWindowContentRegionMin();
-        ////ImVec2 canvasMaxRegion = ImGui::GetWindowContentRegionMax();
-        ////ImVec2 canvasOffset = ImGui::GetWindowPos();
-        ////m_CanvasBounds[0] = { canvasMinRegion.x + canvasOffset.x, canvasMinRegion.y + canvasOffset.y };  // Top-left
-        ////m_CanvasBounds[1] = { m_CanvasBounds[0].x + m_CanvasWidth, m_CanvasBounds[0].y + m_CanvasHeight };  // Bottom-right
-
-        ////m_CanvasFocused = ImGui::IsWindowFocused() && IsMouseInCanvas();
-        ////m_CanvasHovered = ImGui::IsWindowHovered() && IsMouseInCanvas();
-
-        if (m_CanvasWidth > 0 && m_CanvasWidth <= s_MaxViewportSize && m_CanvasHeight > 0 && m_CanvasHeight <= s_MaxViewportSize)
-        {
-            if (auto image = Grafix::Renderer::GetImage())
-            {
-                ImGui::Image(image->GetDescriptorSet(),
-                    { (float)image->GetWidth(), (float)image->GetHeight() },
-                    ImVec2(0, 1), ImVec2(1, 0)
-                );
-            }
-        }
-    }
-    ImGui::End();
-    ImGui::PopStyleVar();
-}
-
-void GameLayer::UI_MenuBar()
-{
-    if (ImGui::BeginMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("Exit"))
-                Grafix::Application::Get().Close();
-
-            ImGui::EndMenu();
-        }
-        ImGui::EndMenuBar();
-    }
-}
-
 static glm::vec3 testColor;
 
 void GameLayer::UI_Info()
@@ -163,16 +166,12 @@ void GameLayer::UI_Info()
     ImGui::Begin("Info");
     {
         ImGui::Text("FPS: %d", (int)(1.0f / Grafix::Application::Get().GetDeltaTime()));
-
         ImGui::Separator();
 
         glm::vec2 cameraPos = m_Camera->GetPosition();
         ImGui::Text("Camera Position: (%.3f, %.3f)", cameraPos.x, cameraPos.y);
-        ////if (m_CanvasHovered)
-        ////    ImGui::Text("Mouse Position In Canvas: (%d, %d)", (int)m_MousePosInCanvas.x, (int)m_MousePosInCanvas.y);
 
         ImGui::Text("Your Score: %d", m_Level->GetScore());
-        ImGui::Text("Bullet Remaining: %d", m_Level->GetPlayer().GetBulletCount());
 
         if (ImGui::Button("Play"))
         {
