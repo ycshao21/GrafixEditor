@@ -88,6 +88,8 @@ void GameLayer::OnUIRender()
     ImGui::End(); // DockSpace
 
     ImVec2 pos = ImGui::GetWindowPos();
+    uint32_t white = Grafix::RGBToUint32(glm::vec3(0.9f));
+
     switch (m_GameState)
     {
         case GameState::Ready:
@@ -100,8 +102,6 @@ void GameLayer::OnUIRender()
         }
         case GameState::Playing:
         {
-            uint32_t white = Grafix::RGBToUint32(glm::vec3(0.9f));
-
             pos.x += m_CanvasWidth - 210.0f;
             pos.y -= 30.0f;
             std::string scoreStr = std::format("Score: {}", m_Level->GetScore());
@@ -122,7 +122,11 @@ void GameLayer::OnUIRender()
             pos.x += 160.0f;
             pos.y += 150.0f;
             std::string scoreStr = std::format("Your score: {}", m_Level->GetScore());
-            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 40.0f, pos, 0xffffffff, scoreStr.c_str());
+            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 40.0f, pos, white, scoreStr.c_str());
+
+            pos.x -= 65.0f;
+            pos.y += 120.0f;
+            ImGui::GetForegroundDrawList()->AddText(ImGui::GetFont(), 40.0f, pos, white, "Press Space to restart");
             break;
         }
     }

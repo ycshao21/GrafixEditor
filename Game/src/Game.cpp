@@ -20,7 +20,7 @@ namespace Grafix
     Application* CreateApplication()
     {
         AppSpecification appSpec;
-        appSpec.Name = "Build Your Dream";
+        appSpec.Name = "Deep Sea Expedition";
         appSpec.Width = 1440;
         appSpec.Height = 810;
 

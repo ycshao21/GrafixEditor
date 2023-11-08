@@ -27,15 +27,13 @@ public:
 
     void Reset();
 private:
-    void GenerateSeamount(int index, float x);
+    float GenerateSeamount(int index, float x);
     void GenerateFish(int index, float x);
     void GenerateCoin();
     void GenerateBulletItem();
-
-    ////bool IsMonsterKilled();
-
+    void GenerateShark(float x, float y);
     void GenerateMedusozoa();
-    void GenerateShark(float x,float y);
+
     // Collision detection
     bool IsOutOfScreen(GameObject& gameobject);
     bool IsItemCollected(GameObject& gameobject);
@@ -53,7 +51,7 @@ private:
     Medusozoa m_Medusozoa;
 
     std::vector<SeamountPair> m_Seamounts;
-    const float m_SeamountGap = 520.0f;
+    const float m_SeamountGap = 550.0f;
     int m_IndexOfNextSeamount = 0;
     int m_IndexOfSeamountToGen = 0;
     float m_SeamountGenDetectX = 2.0f * m_SeamountGap;

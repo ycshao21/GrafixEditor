@@ -2,18 +2,8 @@
 
 Medusozoa::Medusozoa()
 {
-	m_CollisionPoints = {
-		{ 0.7f,  0.7f},
-		{-0.7f,  0.7f},
-		{-0.7f,  0.0f},
-		{-0.4f,  0.0f},
-		{-0.4f, -0.7f},
-		{ 0.4f, -0.7f},
-		{ 0.4f,  0.0f},
-		{ 0.7f,  0.0f}
-	};
-
 	glm::vec3 color = {0.875f,0.55f,0.93f};
+
 	//Body
 	{
 		m_Body.Color = color;
@@ -95,10 +85,7 @@ void Medusozoa::OnUpdate(float ts)
 {
 	m_Time += ts;
 
-	float amplitude = 100.0f;
-	float frequency = 0.2f;
-
-    m_Velocity.y = amplitude * glm::cos(2.0f * frequency * 3.14f * m_Time);
+    m_Velocity.y = 150.0f * glm::cos(m_Time);
 	m_Transform.Translation += m_Velocity * ts;
 }
 

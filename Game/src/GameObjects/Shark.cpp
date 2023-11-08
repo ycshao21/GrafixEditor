@@ -2,17 +2,7 @@
 
 Shark::Shark()
 {
-	m_CollisionPoints = {
-		{-0.9f, 0.0f},
-		{-0.5f,-0.2f},
-		{ 0.5f,-0.1f},
-		{ 0.8f,-0.25f},
-		{ 0.8f, 0.3f},
-		{ 0.5f, 0.0f},
-		{ 0.1f, 0.65f},
-		{-0.3f, 0.35f},
-		{-0.8f, 0.3f}
-	};
+	m_Transform.Scale = glm::vec2(70.0f);
 
 	//Body
 	{
@@ -120,5 +110,11 @@ void Shark::OnRender()
 std::vector<glm::vec2> Shark::GetCollisionPoints()
 {
 	return Grafix::Math::Transform(m_Transform.GetTransformMatrix(), m_CollisionPoints);
+}
+
+void Shark::SetAlive(glm::vec2 pos)
+{
+	m_Alive = true;
+	m_Transform.Translation = pos;
 }
 
